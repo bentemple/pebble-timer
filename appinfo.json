@@ -1,0 +1,160 @@
+{
+  "uuid": "2389e202-3bdd-4f71-ab1c-4b76733410c5",
+  "shortName": "Timer V2",
+  "longName": "Timer V2",
+  "companyName": "MakeAwesomeHappen",
+  "versionLabel": "1.0",
+  "sdkVersion": "3",
+  "targetPlatforms": ["aplite", "basalt"],
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "KEY_DURATION": 5,
+    "KEY_UNIQUEID": 10,
+    "KEY_TOTAL_TIME": 15
+  },
+  "resources": {
+    "media": [
+      {
+        "characterRegex": "[0-9:]",
+        "type": "font",
+        "name": "FONT_LECO_REGULAR_SUBSET_20",
+        "file": "fonts/LECO Regular Mod.otf"
+      },
+      {
+        "characterRegex": "[0-9:]",
+        "type": "font",
+        "name": "FONT_LECO_REGULAR_SUBSET_26",
+        "file": "fonts/LECO Regular Mod.otf"
+      },
+      {
+        "characterRegex": "[0-9:]",
+        "type": "font",
+        "name": "FONT_LECO_REGULAR_SUBSET_36",
+        "file": "fonts/LECO Regular Mod.otf"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_DELETE",
+        "file": "images/action_bar_icon_x BW.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_DELETE",
+        "file": "images/action_bar_icon_x.png",
+        "targetPlatforms": ["basalt"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_DISMISS",
+        "file": "images/AppBar Icon Dismiss BW.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_DISMISS",
+        "file": "images/AppBar Icon Dismiss.png",
+        "targetPlatforms": ["basalt"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_EDIT",
+        "file": "images/AppBar Edit Icon BW.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_EDIT",
+        "file": "images/AppBar Edit Icon.png",
+        "targetPlatforms": ["basalt"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_PAUSE",
+        "file": "images/AppBar Pause Icon BW.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_PAUSE",
+        "file": "images/AppBar Pause Icon.png",
+        "targetPlatforms": ["basalt"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_PLAY",
+        "file": "images/AppBar Play Icon BW.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_PLAY",
+        "file": "images/AppBar Play Icon.png",
+        "targetPlatforms": ["basalt"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_SNOOZE",
+        "file": "images/action_bar_icon_snooze BW.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_SNOOZE",
+        "file": "images/action_bar_icon_snooze.png",
+        "targetPlatforms": ["basalt"]
+      },
+      {
+        "type": "png-trans",
+        "name": "IMAGE_PLAY_LARGE_TRANS",
+        "file": "images/Timer Play Icon BW.png"
+      },
+      {
+        "type": "png-trans",
+        "name": "IMAGE_PAUSE_LARGE_TRANS",
+        "file": "images/Timer Pause Icon BW.png"
+      },
+      {
+        "type": "raw",
+        "name": "ICON_CONFIRMATION",
+        "file": "drawing/Pebble_80x80_Generic_confirmation.pdc"
+      },
+      {
+        "type": "raw",
+        "name": "ICON_ALARM_CLOCK",
+        "file": "drawing/Pebble_80x80_Alarm_Clock.pdc"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ALARM",
+        "file": "images/Icon Alarm.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_SHREADER",
+        "file": "images/Icon Shreader.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_STAR",
+        "file": "images/Icon Star.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "raw",
+        "name": "ICON_DELETED",
+        "file": "drawing/Pebble_80x80_Deleted.pdc"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ICON",
+        "file": "images/Timer Icon.png",
+        "menuIcon": true
+      }
+      ]
+  }
+}
