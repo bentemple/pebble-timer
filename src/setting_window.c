@@ -83,8 +83,8 @@ void update_sub_text(SettingWindow *setting_window) {
         layer_set_hidden(text_layer_get_layer(setting_window->sub_text), false);
 
     // format into time parts
-    time_t end = ((int64_t)time(NULL) + (int64_t)time_ms(NULL, NULL) + duration)
-                                                                    / 1000;
+    time_t end = ((int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL) +
+        duration) / 1000;
     static char buff[] = "End: 00:00 AM";
     struct tm *tick_time = localtime(&end);
     if (clock_is_24h_style())
