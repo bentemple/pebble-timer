@@ -61,13 +61,6 @@ static AppTimer *s_app_timer = NULL;
 
 void app_timer_callback(void *data) {
     s_app_timer = NULL;
-    // refresh
-    bool menu_top = menu_window_get_topmost_window(s_menu_window);
-    bool detail_top = detail_window_get_topmost_window(s_detail_window);
-    bool popup_top = popup_window_get_topmost_window(s_popup_window);
-    if (menu_top) menu_window_refresh(s_menu_window);
-    if (detail_top) detail_window_refresh(s_detail_window);
-    if (popup_top) popup_window_refresh(s_popup_window);
 
     // check for expired timers
     CountdownTimer *countdown_timer =
@@ -100,22 +93,27 @@ void app_timer_callback(void *data) {
             .num_segments = ARRAY_LENGTH(vibe_seg),
         };
         vibes_enqueue_custom_pattern(pat_vibe);
-        // refresh now
-        if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
     }
-    else {
-        // schedule next refresh
-        uint16_t refresh_rate = 35;
-        if (detail_top && !detail_window_get_update_needed(s_detail_window)){
-            refresh_rate = 1000;
-        }
-        else if (menu_top)
-            refresh_rate = 1000;
-        else if (popup_top)
-            refresh_rate = 20;
-        if (refresh_rate == 0) return;
-        s_app_timer = app_timer_register(refresh_rate, app_timer_callback, NULL);
+
+    // refresh
+    bool menu_top = menu_window_get_topmost_window(s_menu_window);
+    bool detail_top = detail_window_get_topmost_window(s_detail_window);
+    bool popup_top = popup_window_get_topmost_window(s_popup_window);
+    if (menu_top) menu_window_refresh(s_menu_window);
+    if (detail_top) detail_window_refresh(s_detail_window);
+    if (popup_top) popup_window_refresh(s_popup_window);
+
+    // schedule next refresh
+    uint16_t refresh_rate = 35;
+    if (detail_top && !detail_window_get_update_needed(s_detail_window)){
+        refresh_rate = 1000;
     }
+    else if (menu_top)
+        refresh_rate = 1000;
+    else if (popup_top)
+        refresh_rate = 20;
+    if (refresh_rate == 0) return;
+    s_app_timer = app_timer_register(refresh_rate, app_timer_callback, NULL);
 }
 
 
@@ -376,7 +374,6 @@ static void initialize(void) {
     s_menu_window = menu_window_create(menu_callbacks, true);
     menu_window_set_highlight_color(s_menu_window, HIGHLIGHT_COLOR);
     menu_window_refresh(s_menu_window);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "MenuWindow loaded");
 
     // create detail window
     DetailWindowCallbacks detail_callbacks = {
@@ -386,7 +383,6 @@ static void initialize(void) {
     };
     s_detail_window = detail_window_create(detail_callbacks);
     detail_window_set_highlight_color(s_detail_window, HIGHLIGHT_COLOR);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "DetailWindow loaded");
 
     // create setting window
     SettingWindowCallbacks setting_callbacks = {
@@ -394,7 +390,6 @@ static void initialize(void) {
     };
     s_setting_window = setting_window_create(setting_callbacks);
     setting_window_set_highlight_color(s_setting_window, HIGHLIGHT_COLOR);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "SettingWindow loaded");
 
     // create pop-up window
     PopupWindowCallbacks popup_callbacks = {
@@ -403,7 +398,6 @@ static void initialize(void) {
     };
     s_popup_window = popup_window_create();
     popup_window_set_action_bar_callbacks(s_popup_window, popup_callbacks);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "PopupWindow loaded");
 
     // check wakeup in case launched by pin
     if (launch_reason() == APP_LAUNCH_TIMELINE_ACTION) {
@@ -431,7 +425,6 @@ static void initialize(void) {
     // start the main update timer
     // update it really fast the first time so everything looks right
     s_app_timer = app_timer_register(5, app_timer_callback, NULL);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Initialization Complete!");
 }
 
 

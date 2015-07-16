@@ -422,9 +422,11 @@ void popup_window_refresh(PopupWindow *popup_window) {
 
 void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id,
     bool endless) {
-    // check if old PDC and destroy
-    if (popup_window->draw_sequence != NULL)
-        gdraw_command_sequence_destroy(popup_window->draw_sequence);
+    // temp variable
+    GDrawCommandSequence *tmp_sequence = popup_window->draw_sequence;
+    // // check if old PDC and destroy
+    // if (popup_window->draw_sequence != NULL)
+    //     gdraw_command_sequence_destroy(popup_window->draw_sequence);
     // load PDC
     popup_window->draw_sequence =
         gdraw_command_sequence_create_with_resource(resource_id);
@@ -432,6 +434,9 @@ void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id,
         gdraw_command_sequence_get_num_frames(popup_window->draw_sequence);
     popup_window->frame_index = 0;
     popup_window->endless = endless;
+    // destroy old pointer
+    if (tmp_sequence != NULL)
+        gdraw_command_sequence_destroy(tmp_sequence);
     // center layer for PDC
     layer_center_in_window(popup_window);
 }

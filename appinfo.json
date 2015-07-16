@@ -124,7 +124,7 @@
       {
         "type": "raw",
         "name": "ICON_ALARM_CLOCK",
-        "file": "drawing/Pebble_80x80_Alarm_Clock.pdc"
+        "file": "drawing/Pebble_80x80_Alarm_clock.pdc"
       },
       {
         "type": "png",

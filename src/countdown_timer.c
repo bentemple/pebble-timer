@@ -170,7 +170,6 @@ void countdown_timer_list_add(CountdownTimer **timer_array,
     memmove(&timer_array[1], &timer_array[0],
         sizeof(CountdownTimer*) * (timer_array_max - 1));
     timer_array[0] = countdown_timer;
-    APP_LOG(APP_LOG_LEVEL_INFO, "Timer Count: %d", (int)(*timer_array_count));
 }
 
 
@@ -277,7 +276,6 @@ void countdown_timer_list_save(CountdownTimer **timer_array,
     persist_write_int(key++, timer_array_count);
     for (uint8_t ii = 0; ii < timer_array_count; ii++){
         persist_write_data(key++, timer_array[ii], sizeof(CountdownTimer));
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "Pin Save ID: %d", (int)countdown_timer_get_id(timer_array[ii]));
     }
 }
 
@@ -293,9 +291,7 @@ void countdown_timer_list_load(CountdownTimer **timer_array,
     for (uint8_t ii = 0; ii < (*timer_array_count); ii++){
         timer_array[ii] = (CountdownTimer*)malloc(sizeof(CountdownTimer));
         persist_read_data(key++, timer_array[ii], sizeof(CountdownTimer));
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "Pin Load ID: %d", (int)countdown_timer_get_id(timer_array[ii]));
     }
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "CountdownTimers loaded");
 }
 
 

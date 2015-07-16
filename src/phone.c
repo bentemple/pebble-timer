@@ -95,12 +95,10 @@ void phone_connect(void){
   // Open AppMessage
   int res = app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM,
     APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Opening: %d", res);
 }
 
 // stop phone connection
 void phone_disconnect(void){
   // unregister callbacks
   app_message_deregister_callbacks();
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Closing!");
 }
