@@ -111,8 +111,8 @@ Pebble.addEventListener('appmessage', function(e) {
       timerPIN.id = e.payload.KEY_UNIQUEID.toString();
       // show total time
       var tot = e.payload.KEY_TOTAL_TIME / 60;
-      var hr = tot / 60;
-      var min = tot % 60;
+      var hr = floor(tot / 60);
+      var min = floor(tot % 60);
       if (hr < 10) hr = "0" + hr;
       if (min < 10) min = "0" + min;
       timerPIN.layout.subtitle = hr + ":" + min;

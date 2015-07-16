@@ -114,10 +114,12 @@ static void layer_center_in_window(PopupWindow *popup_window) {
     GRect layer_frame = image_frame;
     if (popup_window->action_visible)
         layer_frame.origin.x =
-            (window_frame.size.w - ACTION_BAR_WIDTH) / 2 - image_frame.size.w / 2;
+            (window_frame.size.w - ACTION_BAR_WIDTH) / 2 -
+            image_frame.size.w / 2;
     else
         layer_frame.origin.x = window_frame.size.w / 2 - image_frame.size.w / 2;
-    layer_frame.origin.y = window_frame.size.h / 2 - image_frame.size.h / 2;
+    layer_frame.origin.y = window_frame.size.h / 2 -
+        image_frame.size.h / 2 - 7;
     layer_set_frame(popup_window->layer, layer_frame);
 #endif
  }
@@ -424,9 +426,6 @@ void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id,
     bool endless) {
     // temp variable
     GDrawCommandSequence *tmp_sequence = popup_window->draw_sequence;
-    // // check if old PDC and destroy
-    // if (popup_window->draw_sequence != NULL)
-    //     gdraw_command_sequence_destroy(popup_window->draw_sequence);
     // load PDC
     popup_window->draw_sequence =
         gdraw_command_sequence_create_with_resource(resource_id);
@@ -504,15 +503,20 @@ void popup_window_set_highlight_color(PopupWindow *popup_window, GColor color) {
 
 void popup_window_add_action_bar(PopupWindow *popup_window) {
     if (!popup_window->action_visible) {
-        action_bar_layer_add_to_window(popup_window->action, popup_window->window);
+        action_bar_layer_add_to_window(popup_window->action,
+            popup_window->window);
         popup_window->action_visible = true;
         // re-center layers
         layer_center_in_window(popup_window);
         GRect text_frame =
             layer_get_frame(text_layer_get_layer(popup_window->text));
         text_frame.size.w = layer_get_bounds(
-            window_get_root_layer(popup_window->window)).size.w - ACTION_BAR_WIDTH;
-        layer_set_frame(text_layer_get_layer(popup_window->text), text_frame);
+            window_get_root_layer(popup_window->window)).size.w -
+            ACTION_BAR_WIDTH;
+        printf("Width: %d", text_frame.size.w);
+        layer_set_frame(text_layer_get_layer(popup_window->text) , text_frame);
+        text_frame.origin.x = text_frame.origin.y = 0;
+        layer_set_bounds(text_layer_get_layer(popup_window->text) , text_frame);
     }
 }
 
