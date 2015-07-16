@@ -135,9 +135,9 @@ MenuWindow *menu_window_create(MenuWindowCallbacks menu_window_callbacks,
         if (menu_window->window != NULL) {
             // load resources
             menu_window->play_icon = gbitmap_create_with_resource(
-                RESOURCE_ID_IMAGE_PLAY_LARGE_TRANS_WHITE);
+                RESOURCE_ID_IMAGE_PLAY_TRANS_WHITE);
             menu_window->pause_icon = gbitmap_create_with_resource(
-                RESOURCE_ID_IMAGE_PAUSE_LARGE_TRANS_WHITE);
+                RESOURCE_ID_IMAGE_PAUSE_TRANS_WHITE);
             // get window parameters
             Layer *root = window_get_root_layer(menu_window->window);
             GRect bounds = layer_get_frame(root);
