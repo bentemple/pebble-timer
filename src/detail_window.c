@@ -54,6 +54,8 @@ struct DetailWindow {
     GColor highlight_color;
 #ifdef PBL_SDK_3
     StatusBarLayer *status;
+#else
+    GBitmap *waves_image;
 #endif
     DetailWindowCallbacks callbacks;
 
@@ -242,9 +244,10 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     graphics_fill_rect(ctx, GRect(0, level, layer_get_bounds(layer).size.w,
         layer_get_bounds(layer).size.h - level), 1, GCornerNone);
 #else
-    graphics_context_set_stroke_color(ctx, GColorBlack);
-    graphics_draw_line(ctx, GPoint(0, level),
-        GPoint(layer_get_bounds(layer).size.w, level));
+    GRect img_frame = gbitmap_get_bounds(detail_window->waves_image);
+    img_frame.size.w = layer_get_bounds(layer).size.w;
+    img_frame.origin = GPoint(0, level - img_frame.size.h);
+    graphics_draw_bitmap_in_rect(ctx, detail_window->waves_image, img_frame);
 #endif
 
     // step bubbles
@@ -345,6 +348,10 @@ DetailWindow *detail_window_create(
                 gbitmap_create_with_resource(RESOURCE_ID_IMAGE_PAUSE);
             detail_window->delete_icon =
                 gbitmap_create_with_resource(RESOURCE_ID_IMAGE_DELETE);
+#ifndef PBL_COLOR
+            detail_window->waves_image =
+                gbitmap_create_with_resource(RESOURCE_ID_IMAGE_WAVES);
+#endif
             detail_window->large_font = fonts_load_custom_font(
                 resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_36));
             detail_window->medium_font = fonts_load_custom_font(
@@ -457,6 +464,9 @@ void detail_window_destroy(DetailWindow *detail_window) {
         gbitmap_destroy(detail_window->play_icon);
         gbitmap_destroy(detail_window->pause_icon);
         gbitmap_destroy(detail_window->delete_icon);
+#ifndef PBL_COLOR
+        gbitmap_destroy(detail_window->waves_image);
+#endif
         fonts_unload_custom_font(detail_window->large_font);
         fonts_unload_custom_font(detail_window->medium_font);
         fonts_unload_custom_font(detail_window->small_font);

@@ -151,6 +151,11 @@
       },
       {
         "type": "png",
+        "name": "IMAGE_WAVES",
+        "file": "images/Image Waves.png"
+      },
+      {
+        "type": "png",
         "name": "IMAGE_ICON",
         "file": "images/Timer Icon.png",
         "menuIcon": true
