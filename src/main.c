@@ -2,15 +2,10 @@
  * FILENAME :        main.c
  *
  * DESCRIPTION :
- *      Entry point and main code for program
+ *      Entry point and main logic for program. Controls everything
+ *      of importance that happens.
  *
- * PUBLIC FUNCTIONS :
- *
- * NOTES :      NA
- *
- * AUTHOR :    Eric Phillips        START DATE :    07/10/15
- *
- * CHANGES :    NA
+ * AUTHOR :     Eric Phillips        START DATE :    07/10/15
  *
  */
 
@@ -59,7 +54,7 @@ static AppTimer *s_app_timer = NULL;
  * update callback which determines refresh rate
  */
 
-void app_timer_callback(void *data) {
+static void app_timer_callback(void *data) {
     s_app_timer = NULL;
 
     // check for expired timers

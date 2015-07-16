@@ -6,12 +6,16 @@
  *      a list of CountdownTimers
  *
  * PUBLIC FUNCTIONS :
+ *      MenuWindow  *menu_window_create(MenuWindowCallbacks
+ *                      menu_window_callbacks, bool animated);
+ *      void        menu_window_destroy(MenuWindow *menu_window);
+ *      bool        menu_window_get_topmost_window(MenuWindow *menu_window);
+ *      void        menu_window_refresh(MenuWindow *menu_window);
+ *      void        menu_window_reload_data(MenuWindow *menu_window);
+ *      void        menu_window_set_highlight_color(MenuWindow *menu_window,
+ *                      GColor color);
  *
- * NOTES :      NA
- *
- * AUTHOR :    Eric Phillips        START DATE :    07/10/15
- *
- * CHANGES :    NA
+ * AUTHOR :     Eric Phillips        START DATE :    07/10/15
  *
  */
 
@@ -30,14 +34,14 @@
  */
 
 struct MenuWindow {
-    Window *window;
-    MenuLayer *menu;
-    TextLayer *text;
-    GBitmap *play_icon, *pause_icon;
+    Window      *window;    //< main window
+    MenuLayer   *menu;      //< menu layer displaying timer list
+    TextLayer   *text;      //< text layer which displays "No Timers"
+    GBitmap     *play_icon, *pause_icon;    //< menu layer icons
 #ifdef PBL_SDK_3
-    StatusBarLayer *status;
+    StatusBarLayer      *status;            //< status bar for Basalt
 #endif
-    MenuWindowCallbacks callbacks;
+    MenuWindowCallbacks callbacks;          //< menu layer callbacks
 };
 
 

@@ -3,19 +3,42 @@
  *
  * DESCRIPTION :
  *      Displays a pop-up window with a PDC or image, some text, and an optional
- *      ActionBar.
+ *      ActionBar. It also can auto-close after a customizable length of time.
+ *      This could be used in any project.
  *
  * PUBLIC FUNCTIONS :
- *      CountdownTimer* countdown_timer_create(int64_t duration)
- *      void            countdown_timer_destroy(CountdownTimer *countdown_timer)
- *      void            countdown_timer_start(CountdownTimer *countdown_timer)
- *      void            countdown_timer_stop(CountdownTimer *countdown_timer)
+ *      PopupWindow     *popup_window_create(void);
+ *      void            popup_window_destroy(PopupWindow *popup_window);
+ *      void            popup_window_push(PopupWindow *popup_window,
+ *                          bool animated);
+ *      void            popup_window_pop(PopupWindow *popup_window,
+ *                          bool animated);
+ *      bool            popup_window_get_topmost_window(PopupWindow
+ *                      *popup_window);
+ *      void            popup_window_set_auto_close_duration(PopupWindow
+ *                          *popup_window, int64_t duration);
+ *      void            popup_window_set_countdown_timer(PopupWindow
+ *                          *popup_window, CountdownTimer *countdown_timer);
+ *      void            popup_window_refresh(PopupWindow *popup_window);
+ *      void            popup_window_set_pdc(PopupWindow *popup_window,
+ *                          uint32_t resource_id, bool endless);
+ *      int64_t         popup_window_get_pdc_duration(PopupWindow
+ *                          *popup_window);
+ *      void            popup_window_set_image(PopupWindow *popup_window,
+ *                          uint32_t resource_id);
+ *      void            popup_window_set_title(PopupWindow *popup_window,
+ *                          const char *text);
+ *      void            popup_window_set_highlight_color(PopupWindow
+ *                          *popup_window, GColor color);
+ *      void            popup_window_add_action_bar(PopupWindow *popup_window);
+ *      void            popup_window_remove_action_bar(PopupWindow
+ *                          *popup_window);
+ *      void            popup_window_set_action_bar_callbacks(PopupWindow
+ *                          *popup_window, PopupWindowCallbacks callbacks);
+ *      void            popup_window_remove_action_bar_callbacks(PopupWindow
+ *                          *popup_window);
  *
- * NOTES :      NA
- *
- * AUTHOR :    Eric Phillips        START DATE :    07/13/15
- *
- * CHANGES :    NA
+ * AUTHOR :     Eric Phillips        START DATE :    07/13/15
  *
  */
 
@@ -216,7 +239,7 @@ void popup_window_refresh(PopupWindow *popup_window);
  */
 
 void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id,
-	bool endless);
+    bool endless);
 
 
 

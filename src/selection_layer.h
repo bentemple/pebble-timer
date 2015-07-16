@@ -1,3 +1,9 @@
+/*
+ * somewhat modified implementation of the firmware's SelectionLayer
+ * the changes include adding B&W support and the ability to move the
+ * selector field backward and forward.
+ */
+
 #pragma once
 
 #include "pebble.h"

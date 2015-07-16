@@ -5,16 +5,28 @@
  *      Display a timer with controls to modify it
  *
  * PUBLIC FUNCTIONS :
- *      CountdownTimer* countdown_timer_create(int64_t duration)
- *      void            countdown_timer_destroy(CountdownTimer *countdown_timer)
- *      void            countdown_timer_start(CountdownTimer *countdown_timer)
- *      void            countdown_timer_stop(CountdownTimer *countdown_timer)
+ *      DetailWindow    *detail_window_create(
+ *                          DetailWindowCallbacks detail_window_callbacks);
+ *      void            detail_window_destroy(DetailWindow *detail_window);
+ *      void            detail_window_push(DetailWindow *detail_window,
+ *                          bool animated);
+ *      void            detail_window_pop(DetailWindow *detail_window,
+ *                          bool animated);
+ *      bool            detail_window_get_topmost_window(DetailWindow
+ *                          *detail_window);
+ *      void            detail_window_set_countdown_timer(DetailWindow
+ *                          *detail_window, CountdownTimer *countdown_timer);
+ *      void            detail_window_refresh(DetailWindow *detail_window);
+ *      void            detail_window_deep_refresh(DetailWindow *detail_window);
+ *      void            detail_window_set_highlight_color(DetailWindow
+ *                          *detail_window, GColor color);
+ *      bool            detail_window_get_update_needed(DetailWindow
+ *                          *detail_window);
  *
- * NOTES :      NA
+ * NOTES :      The actual timer structure definition is not exposed to
+ *              prevent direct modification of the structure.
  *
- * AUTHOR :    Eric Phillips        START DATE :    07/11/15
- *
- * CHANGES :    NA
+ * AUTHOR :     Eric Phillips        START DATE :    07/11/15
  *
  */
 
@@ -35,9 +47,10 @@
   */
 
 typedef struct Bubble {
-    GPoint pt1, pt2;
-    uint16_t rad;
-    bool live;
+    GPoint      pt1;    //< actual point of bubble, moves side to side
+    GPoint      pt2;    //< master point of bubble, moves straight up from bottom
+    uint16_t    rad;    //< radius of bubble
+    bool        live;   //< whether the bubble has popped or not
 } Bubble;
 
 /*
@@ -45,25 +58,26 @@ typedef struct Bubble {
  */
 
 struct DetailWindow {
-    Window *window;
-    Layer *layer;
-    TextLayer *main_text, *sub_text;
-    ActionBarLayer *action;
-    GBitmap *edit_icon, *play_icon, *pause_icon, *delete_icon;
-    GFont *large_font, *medium_font, *small_font, *main_font;
-    GColor highlight_color;
+    Window      *window;    //< main window
+    Layer       *layer;     //< drawing layer
+    TextLayer   *main_text; //< main, larger text
+    TextLayer   *sub_text;  //< footer, small text
+    ActionBarLayer *action; //< action bar
+    GBitmap     *edit_icon, *play_icon, *pause_icon, *delete_icon;  //< icons
+    GFont       *large_font, *medium_font, *small_font, *main_font; //< fonts
+    GColor      highlight_color;        //< main color for highlights
 #ifdef PBL_SDK_3
-    StatusBarLayer *status;
+    StatusBarLayer *status;             //< status bar for SDK 3
 #else
-    GBitmap *waves_image;
+    GBitmap     *waves_image;           //< image for Aplite water level
 #endif
-    DetailWindowCallbacks callbacks;
+    DetailWindowCallbacks callbacks;    //< callbacks for button presses
 
-    Bubble bubbles[4];
-    int64_t bubble_last_release;
-    bool animation_update_needed;
+    Bubble      bubbles[4];                 //< array of Bubble structures
+    int64_t     bubble_last_release;        //< time since last bubble release
+    bool        animation_update_needed;    //< whether it needs to be refreshed
 
-    CountdownTimer *countdown_timer;
+    CountdownTimer *countdown_timer;        //< the CountdownTimer being shown
 };
 
 
@@ -76,7 +90,7 @@ struct DetailWindow {
  * draw a thick line regardless of platform
  */
 
-static void draw_thick_line(GContext *ctx, GPoint p0, GPoint p1){
+static void draw_thick_line(GContext *ctx, GPoint p0, GPoint p1) {
 #ifdef PBL_SDK_3
     graphics_draw_line(ctx, p0, p1);
 #else
@@ -95,7 +109,7 @@ static void draw_thick_line(GContext *ctx, GPoint p0, GPoint p1){
  */
 
 static void draw_bubbles(DetailWindow *detail_window, GContext *ctx,
-                                                        int16_t level){
+                                                        int16_t level) {
     // set up drawing environment
     graphics_context_set_stroke_color(ctx, GColorBlack);
 #ifdef PBL_SDK_3
@@ -104,7 +118,7 @@ static void draw_bubbles(DetailWindow *detail_window, GContext *ctx,
 
     Bubble *t_bubble = detail_window->bubbles;
     for (uint8_t ii = 0; ii < ARRAY_LENGTH(detail_window->bubbles);
-                                                            ii++, t_bubble++){
+                                                            ii++, t_bubble++) {
         // check if on screen
         if (t_bubble->live){
             // check if popped
@@ -159,7 +173,7 @@ static void draw_bubbles(DetailWindow *detail_window, GContext *ctx,
  * returns a value that oscillates like a sign wave
  */
 
-int32_t ease_in_out_quad(int32_t oT, int32_t b, int32_t c, int32_t d) {
+static int32_t ease_in_out_quad(int32_t oT, int32_t b, int32_t c, int32_t d) {
     int32_t t = oT * 1000;
     t /= d / 2;
     if (t < 1000) return c/2*t*t / 1000000 + b;
@@ -176,7 +190,7 @@ int32_t ease_in_out_quad(int32_t oT, int32_t b, int32_t c, int32_t d) {
  * to side and upward
  */
 
- static void step_bubbles(DetailWindow *detail_window, int16_t level){
+static void step_bubbles(DetailWindow *detail_window, int16_t level) {
     int64_t epoch = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
     GRect bounds = layer_get_bounds(detail_window->layer);
 
@@ -206,7 +220,7 @@ int32_t ease_in_out_quad(int32_t oT, int32_t b, int32_t c, int32_t d) {
                     detail_window->animation_update_needed || true;
         }
         else if (epoch > detail_window->bubble_last_release &&
-                !countdown_timer_get_paused(detail_window->countdown_timer)){
+                !countdown_timer_get_paused(detail_window->countdown_timer)) {
             // create bubble
             t_bubble->rad = rand();
             // set bubble last time
@@ -381,7 +395,7 @@ DetailWindow *detail_window_create(
                 GRect(0, 20, bounds.size.w - ACTION_BAR_WIDTH, 36));
 #else
             detail_window->main_text = text_layer_create(
-                GRect(0, 5, bounds.size.w - ACTION_BAR_WIDTH, 36));
+                GRect(0, 7, bounds.size.w - ACTION_BAR_WIDTH, 36));
 #endif
             //text_layer_set_text_color(detail_window->main_text, GColorBlack);
             text_layer_set_font(detail_window->main_text,
@@ -400,7 +414,7 @@ DetailWindow *detail_window_create(
                 GRect(10, 138, bounds.size.w - ACTION_BAR_WIDTH, 20));
 #else
             detail_window->sub_text = text_layer_create(
-                GRect(10, 113, bounds.size.w - ACTION_BAR_WIDTH, 20));
+                GRect(10, 122, bounds.size.w - ACTION_BAR_WIDTH, 20));
 #endif
             //text_layer_set_text_color(detail_window->main_text, GColorBlack);
             text_layer_set_font(detail_window->sub_text,

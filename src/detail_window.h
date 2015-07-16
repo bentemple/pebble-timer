@@ -5,16 +5,28 @@
  *      Display a timer with controls to modify it
  *
  * PUBLIC FUNCTIONS :
- *      CountdownTimer* countdown_timer_create(int64_t duration)
- *      void            countdown_timer_destroy(CountdownTimer *countdown_timer)
- *      void            countdown_timer_start(CountdownTimer *countdown_timer)
- *      void            countdown_timer_stop(CountdownTimer *countdown_timer)
+ *      DetailWindow    *detail_window_create(
+ *                          DetailWindowCallbacks detail_window_callbacks);
+ *      void            detail_window_destroy(DetailWindow *detail_window);
+ *      void            detail_window_push(DetailWindow *detail_window,
+ *                          bool animated);
+ *      void            detail_window_pop(DetailWindow *detail_window,
+ *                          bool animated);
+ *      bool            detail_window_get_topmost_window(DetailWindow
+ *                          *detail_window);
+ *      void            detail_window_set_countdown_timer(DetailWindow
+ *                          *detail_window, CountdownTimer *countdown_timer);
+ *      void            detail_window_refresh(DetailWindow *detail_window);
+ *      void            detail_window_deep_refresh(DetailWindow *detail_window);
+ *      void            detail_window_set_highlight_color(DetailWindow
+ *                          *detail_window, GColor color);
+ *      bool            detail_window_get_update_needed(DetailWindow
+ *                          *detail_window);
  *
- * NOTES :      NA
+ * NOTES :      The actual timer structure definition is not exposed to
+ *              prevent direct modification of the structure.
  *
- * AUTHOR :    Eric Phillips        START DATE :    07/11/15
- *
- * CHANGES :    NA
+ * AUTHOR :     Eric Phillips        START DATE :    07/11/15
  *
  */
 

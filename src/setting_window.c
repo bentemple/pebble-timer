@@ -5,16 +5,23 @@
  *      Setting screen to select a time duration
  *
  * PUBLIC FUNCTIONS :
- *      CountdownTimer* countdown_timer_create(int64_t duration)
- *      void            countdown_timer_destroy(CountdownTimer *countdown_timer)
- *      void            countdown_timer_start(CountdownTimer *countdown_timer)
- *      void            countdown_timer_stop(CountdownTimer *countdown_timer)
+ *      SettingWindow   *setting_window_create(SettingWindowCallbacks
+ *                          setting_window_callbacks);
+ *      void            setting_window_destroy(SettingWindow *setting_window);
+ *      void            setting_window_push(SettingWindow *setting_window,
+ *                          bool animated);
+ *      void            setting_window_pop(SettingWindow *setting_window,
+ *                          bool animated);
+ *      bool            setting_window_get_topmost_window(SettingWindow
+ *                          *setting_window);
+ *      void            setting_window_set_timer(SettingWindow *setting_window,
+ *                          CountdownTimer *countdown_timer);
+ *      CountdownTimer  *setting_window_get_timer(SettingWindow
+ *                          *setting_window);
+ *      void            setting_window_set_highlight_color(SettingWindow
+ *                          *setting_window, GColor color);
  *
- * NOTES :      NA
- *
- * AUTHOR :    Eric Phillips        START DATE :    07/12/15
- *
- * CHANGES :    NA
+ * AUTHOR :         Eric Phillips        START DATE :    07/12/15
  *
  */
 
@@ -37,19 +44,20 @@
  */
 
 struct SettingWindow {
-    Window *window;
-    TextLayer *main_text, *sub_text;
-    Layer *selection;
-    GColor highlight_color;
+    Window          *window;            //< main window
+    TextLayer       *main_text;         //< title text at top of screen
+    TextLayer       *sub_text;          //< sub text at bottom for messages
+    Layer           *selection;         //< SelectionLayer for input
+    GColor          highlight_color;    //< color for selection highlights
 #ifdef PBL_SDK_3
-    StatusBarLayer *status;
+    StatusBarLayer  *status;            //< status bar for Basalt
 #endif
-    SettingWindowCallbacks callbacks;
+    SettingWindowCallbacks callbacks;   //< callbacks
 
-    CountdownTimer *countdown_timer;
-    int32_t field_values[3];
-    char field_buffs[3][3];
-    int8_t field_selection;
+    CountdownTimer  *countdown_timer;   //< timer associated being set
+    int32_t         field_values[3];    //< values of selection fields
+    char            field_buffs[3][3];  //< buffers to draw field contents
+    int8_t          field_selection;    //< index of selected field
 };
 
 
@@ -65,7 +73,7 @@ struct SettingWindow {
  * "Timer too short" or "End: 12:43"
  */
 
-void update_sub_text(SettingWindow *setting_window) {
+static void update_sub_text(SettingWindow *setting_window) {
     int64_t duration = (int64_t)setting_window->field_values[0] * 3600000 +
         (int64_t)setting_window->field_values[1] * 60000 +
         (int64_t)setting_window->field_values[2] * 1000;

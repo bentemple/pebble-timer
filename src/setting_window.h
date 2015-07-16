@@ -5,16 +5,23 @@
  *      Setting screen to select a time duration
  *
  * PUBLIC FUNCTIONS :
- *      CountdownTimer* countdown_timer_create(int64_t duration)
- *      void            countdown_timer_destroy(CountdownTimer *countdown_timer)
- *      void            countdown_timer_start(CountdownTimer *countdown_timer)
- *      void            countdown_timer_stop(CountdownTimer *countdown_timer)
- *
- * NOTES :      NA
+ *      SettingWindow   *setting_window_create(SettingWindowCallbacks
+ *                          setting_window_callbacks);
+ *      void            setting_window_destroy(SettingWindow *setting_window);
+ *      void            setting_window_push(SettingWindow *setting_window,
+ *                          bool animated);
+ *      void            setting_window_pop(SettingWindow *setting_window,
+ *                          bool animated);
+ *      bool            setting_window_get_topmost_window(SettingWindow
+ *                          *setting_window);
+ *      void            setting_window_set_timer(SettingWindow *setting_window,
+ *                          CountdownTimer *countdown_timer);
+ *      CountdownTimer  *setting_window_get_timer(SettingWindow
+ *                          *setting_window);
+ *      void            setting_window_set_highlight_color(SettingWindow
+ *                          *setting_window, GColor color);
  *
  * AUTHOR :    Eric Phillips        START DATE :    07/12/15
- *
- * CHANGES :    NA
  *
  */
 

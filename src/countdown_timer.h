@@ -5,16 +5,55 @@
  *      Timer creation, destruction, modification, etc.
  *
  * PUBLIC FUNCTIONS :
- *      CountdownTimer* countdown_timer_create(int64_t duration)
- *      void            countdown_timer_destroy(CountdownTimer *countdown_timer)
- *      void            countdown_timer_start(CountdownTimer *countdown_timer)
- *      void            countdown_timer_stop(CountdownTimer *countdown_timer)
+ *      CountdownTimer  *countdown_timer_create(int64_t duration);
+ *      void            countdown_timer_destroy(CountdownTimer
+ *                          *countdown_timer);
+ *      void            countdown_timer_start(CountdownTimer *countdown_timer);
+ *      void            countdown_timer_stop(CountdownTimer *countdown_timer);
+ *      void            countdown_timer_update(CountdownTimer *countdown_timer,
+ *                          int64_t duration, bool update_duration);
+ *      CountdownTimer  *countdown_timer_check_ended(CountdownTimer
+ *                          **timer_array, uint8_t timer_array_count);
+ *      void            countdown_timer_list_add(CountdownTimer **timer_array,
+ *                          uint8_t timer_array_max, uint8_t *timer_array_count,
+ *                          CountdownTimer *countdown_timer);
+ *      void            countdown_timer_list_remove(CountdownTimer
+ *                          **timer_array, uint8_t *timer_array_count,
+ *                          uint8_t timer_index);
+ *      int16_t         countdown_timer_list_get_timer_index(CountdownTimer
+ *                          **timer_array, uint8_t timer_array_count,
+ *                          CountdownTimer *countdown_timer);
+ *      CountdownTimer  *countdown_timer_list_get_closest_timer(CountdownTimer
+ *                          **timer_array, uint8_t timer_array_count);
+ *      CountdownTimer  *countdown_timer_list_get_timer_by_id(
+ *                          CountdownTimer **timer_array,
+ *                          uint8_t timer_array_count, int32_t id);
+ *      void            countdown_timer_list_destroy_all(CountdownTimer
+ *                          **timer_array, uint8_t *timer_array_count);
+ *      void            countdown_timer_list_save(CountdownTimer **timer_array,
+ *                          uint8_t timer_array_count, uint32_t key);
+ *      void            countdown_timer_list_load(CountdownTimer **timer_array,
+ *                          uint8_t *timer_array_count, uint32_t key);
+ *      bool            countdown_timer_get_paused(CountdownTimer
+ *                          *countdown_timer);
+ *      int64_t         countdown_timer_get_start(CountdownTimer
+ *                          *countdown_timer);
+ *      int64_t         countdown_timer_get_current_time(CountdownTimer
+ *                          *countdown_timer);
+ *      void            countdown_timer_rand_id(CountdownTimer
+ *                          *countdown_timer);
+ *      int32_t         countdown_timer_get_id(CountdownTimer *countdown_timer);
+ *      int64_t         countdown_timer_get_duration(CountdownTimer
+ *                          *countdown_timer);
+ *      void            countdown_timer_format_text(int64_t value,
+ *                          char *buff, uint8_t size);
+ *      char            *countdown_timer_format_own_buff(CountdownTimer
+ *                          *countdown_timer);
  *
- * NOTES :      NA
+ * NOTES :      The actual timer structure definition is not exposed to
+ *              prevent direct modification of the structure.
  *
- * AUTHOR :    Eric Phillips        START DATE :    07/09/15
- *
- * CHANGES :    NA
+ * AUTHOR :     Eric Phillips        START DATE :    07/09/15
  *
  */
 
@@ -179,8 +218,8 @@ int16_t countdown_timer_list_get_timer_index(CountdownTimer **timer_array,
  *  returns: a pointer to the closest to ended CountdownTimer
  */
 
-CountdownTimer *countdown_timer_list_get_closest_timer(CountdownTimer **timer_array,
-                                    uint8_t timer_array_count);
+CountdownTimer *countdown_timer_list_get_closest_timer(
+    CountdownTimer **timer_array, uint8_t timer_array_count);
 
 
 

@@ -6,12 +6,16 @@
  *      a list of CountdownTimers
  *
  * PUBLIC FUNCTIONS :
+ *      MenuWindow  *menu_window_create(MenuWindowCallbacks
+ *                      menu_window_callbacks, bool animated);
+ *      void        menu_window_destroy(MenuWindow *menu_window);
+ *      bool        menu_window_get_topmost_window(MenuWindow *menu_window);
+ *      void        menu_window_refresh(MenuWindow *menu_window);
+ *      void        menu_window_reload_data(MenuWindow *menu_window);
+ *      void        menu_window_set_highlight_color(MenuWindow *menu_window,
+ *                      GColor color);
  *
- * NOTES :      NA
- *
- * AUTHOR :    Eric Phillips        START DATE :    07/10/15
- *
- * CHANGES :    NA
+ * AUTHOR :     Eric Phillips        START DATE :    07/10/15
  *
  */
 
