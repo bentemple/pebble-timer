@@ -333,6 +333,14 @@ bool setting_window_get_topmost_window(SettingWindow *setting_window) {
 void setting_window_set_timer(SettingWindow *setting_window,
                                     CountdownTimer *countdown_timer) {
     setting_window->countdown_timer = countdown_timer;
+    // set selection values if a timer was passed in
+    if (setting_window->countdown_timer != NULL) {
+        int64_t duration =
+            countdown_timer_get_duration(setting_window->countdown_timer);
+        setting_window->field_values[0] = duration / 3600000;
+        setting_window->field_values[1] = duration % 3600000 / 60000;
+        setting_window->field_values[2] = duration % 60000 / 1000;
+    }
 }
 
 
