@@ -28,6 +28,8 @@
 #define COUNTDOWN_TIMER_SNOOZE_DELAY 60000
 #define TIMER_MIN_LENGTH 5000
 #define TIMELINE_MIN_LENGTH 900000
+#define INACTIVITY_THRESHOLD 300000 //< length of time before refresh throttling
+#define INACTIVE_REFRESH_DELAY 1000 //< ms between frames after throttling
 
 
 /*******************************************************************************
@@ -41,6 +43,7 @@ static PopupWindow *s_popup_window = NULL;
 static uint8_t s_countdown_timers_count = 0;
 static CountdownTimer *s_countdown_timers[COUNTDOWN_TIMERS_MAX] = {};
 static AppTimer *s_app_timer = NULL;
+static int64_t last_activity = 0;
 
 
 
@@ -88,6 +91,9 @@ static void app_timer_callback(void *data) {
             .num_segments = ARRAY_LENGTH(vibe_seg),
         };
         vibes_enqueue_custom_pattern(pat_vibe);
+
+        // we want the alarm going off to count as activity
+        last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
     }
 
     // refresh
@@ -97,6 +103,10 @@ static void app_timer_callback(void *data) {
     if (menu_top) menu_window_refresh(s_menu_window);
     if (detail_top) detail_window_refresh(s_detail_window);
     if (popup_top) popup_window_refresh(s_popup_window);
+
+    // check activity
+    int64_t inactivity_duration = (int64_t)time(NULL) * 1000 +
+        (int64_t)time_ms(NULL, NULL) - last_activity;
 
     // schedule next refresh
     uint16_t refresh_rate = 35;
@@ -108,6 +118,10 @@ static void app_timer_callback(void *data) {
     else if (popup_top)
         refresh_rate = 20;
     if (refresh_rate == 0) return;
+    // cap refresh rate if inactive
+    if (inactivity_duration > INACTIVITY_THRESHOLD)
+        refresh_rate = (refresh_rate > INACTIVE_REFRESH_DELAY) ?
+            refresh_rate : INACTIVE_REFRESH_DELAY;
     s_app_timer = app_timer_register(refresh_rate, app_timer_callback, NULL);
 }
 
@@ -124,6 +138,9 @@ static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer,
         COUNTDOWN_TIMER_SNOOZE_DELAY, false);
     countdown_timer_start(countdown_timer);
     popup_window_pop(s_popup_window, true);
+
+    // log activity
+    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
 
 
@@ -136,6 +153,9 @@ static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer,
 static void popup_window_stop_timer_callback(void *context) {
     // pop the window
     popup_window_pop(s_popup_window, true);
+
+    // log activity
+    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
 
 
@@ -200,6 +220,9 @@ static void setting_window_complete_callback(int64_t duration, void *context){
 //     popup_window_push(s_popup_window, true);
     // refresh now
     if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
+
+    // log activity
+    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
 
 
@@ -213,6 +236,9 @@ static void detail_window_edit_timer_callback(CountdownTimer *countdown_timer,
                                     void *context) {
     setting_window_set_timer(s_setting_window, countdown_timer);
     setting_window_push(s_setting_window, true);
+
+    // log activity
+    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
 
 
@@ -244,6 +270,9 @@ static void detail_window_playpause_timer_callback(
     }
     // refresh DetailWindow
     detail_window_deep_refresh(s_detail_window);
+
+    // log activity
+    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
 
 
@@ -284,6 +313,9 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
 #endif
     popup_window_remove_action_bar(s_popup_window);
     popup_window_push(s_popup_window, true);
+
+    // log activity
+    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
 
 
@@ -335,6 +367,9 @@ static void menu_window_click_callback(uint8_t index, void *context) {
         // start timer refreshing quickly
         if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
     }
+
+    // log activity
+    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
 
 
@@ -417,6 +452,9 @@ static void initialize(void) {
     // start the main update timer
     // update it really fast the first time so everything looks right
     s_app_timer = app_timer_register(5, app_timer_callback, NULL);
+
+    // log activity
+    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
 
 
