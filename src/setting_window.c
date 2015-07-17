@@ -145,8 +145,9 @@ static void selection_handle_inc(unsigned index, uint8_t clicks,
                                                     void *context) {
     SettingWindow *setting_window = (SettingWindow*)context;
     setting_window->field_values[index] += (clicks > 10) ? 2 : 1;
-    if (setting_window->field_values[index] >= 60)
-        setting_window->field_values[index] -= 60;
+    int8_t max_value = (index == 0) ? 24 : 60;
+    if (setting_window->field_values[index] >= max_value)
+        setting_window->field_values[index] -= max_value;
     // update text
     update_sub_text(setting_window);
 }
@@ -161,8 +162,9 @@ static void selection_handle_dec(unsigned index, uint8_t clicks,
                                                     void *context) {
     SettingWindow *setting_window = (SettingWindow*)context;
     setting_window->field_values[index] -= (clicks > 10) ? 2 : 1;
+    int8_t max_value = (index == 0) ? 24 : 60;
     if (setting_window->field_values[index] < 0)
-        setting_window->field_values[index] += 60;
+        setting_window->field_values[index] += max_value;
     // update text
     update_sub_text(setting_window);
 }
@@ -334,13 +336,13 @@ void setting_window_set_timer(SettingWindow *setting_window,
                                     CountdownTimer *countdown_timer) {
     setting_window->countdown_timer = countdown_timer;
     // set selection values if a timer was passed in
-    if (setting_window->countdown_timer != NULL) {
-        int64_t duration =
+    int64_t duration = 0;
+    if (setting_window->countdown_timer != NULL)
+        duration =
             countdown_timer_get_duration(setting_window->countdown_timer);
-        setting_window->field_values[0] = duration / 3600000;
-        setting_window->field_values[1] = duration % 3600000 / 60000;
-        setting_window->field_values[2] = duration % 60000 / 1000;
-    }
+    setting_window->field_values[0] = duration / 3600000;
+    setting_window->field_values[1] = duration % 3600000 / 60000;
+    setting_window->field_values[2] = duration % 60000 / 1000;
 }
 
 

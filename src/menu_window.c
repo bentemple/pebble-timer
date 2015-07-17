@@ -99,10 +99,19 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer,
             menu_window->pause_icon : menu_window->play_icon);
         // draw progress bar
         if (countdown_timer_get_start(countdown_timer) != 0){
-          graphics_context_set_fill_color(ctx, GColorBlack);
-          graphics_fill_rect(ctx, GRect(10, size.h - 10,
-            (size.w - 20) * countdown_timer_get_current_time(countdown_timer) /
-            countdown_timer_get_duration(countdown_timer), 2), 0, GCornerNone);
+#ifdef PBL_COLOR
+            if (menu_layer_get_selected_index(menu_window->menu).row ==
+                cell_index->row)
+                graphics_context_set_fill_color(ctx, GColorWhite);
+            else
+                graphics_context_set_fill_color(ctx, GColorLightGray);
+            graphics_fill_rect(ctx, GRect(10, size.h - 10,
+                (size.w - 20), 2), 0, GCornerNone);
+#endif
+            graphics_context_set_fill_color(ctx, GColorBlack);
+            graphics_fill_rect(ctx, GRect(10, size.h - 10,
+                (size.w - 20) * countdown_timer_get_current_time(countdown_timer) /
+                countdown_timer_get_duration(countdown_timer), 2), 0, GCornerNone);
         }
     }
 }
@@ -249,10 +258,10 @@ void menu_window_refresh(MenuWindow *menu_window) {
  */
 
 void menu_window_reload_data(MenuWindow *menu_window) {
-    MenuIndex menu_index = menu_layer_get_selected_index(menu_window->menu);
+    // MenuIndex menu_index = menu_layer_get_selected_index(menu_window->menu);
     menu_layer_reload_data(menu_window->menu);
-    menu_layer_set_selected_index(menu_window->menu, menu_index,
-                                MenuRowAlignCenter, false);
+    // menu_layer_set_selected_index(menu_window->menu, menu_index,
+    //                             MenuRowAlignCenter, false);
 }
 
 

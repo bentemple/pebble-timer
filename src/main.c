@@ -185,19 +185,19 @@ static void setting_window_complete_callback(int64_t duration, void *context){
         }
     }
 
-    // show timer confirmation window
-    popup_window_set_title(s_popup_window, "Timer set!");
-    popup_window_set_highlight_color(s_popup_window, HIGHLIGHT_COLOR);
-#ifdef PBL_SDK_3
-    popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_CONFIRMATION, false);
-    int64_t pdc_duration = popup_window_get_pdc_duration(s_popup_window);
-    popup_window_set_auto_close_duration(s_popup_window, pdc_duration);
-#else
-    popup_window_set_image(s_popup_window, RESOURCE_ID_IMAGE_STAR);
-    popup_window_set_auto_close_duration(s_popup_window, 1000);
-#endif
-    popup_window_remove_action_bar(s_popup_window);
-    popup_window_push(s_popup_window, true);
+//     // show timer confirmation window
+//     popup_window_set_title(s_popup_window, "Timer set!");
+//     popup_window_set_highlight_color(s_popup_window, HIGHLIGHT_COLOR);
+// #ifdef PBL_SDK_3
+//     popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_CONFIRMATION, false);
+//     int64_t pdc_duration = popup_window_get_pdc_duration(s_popup_window);
+//     popup_window_set_auto_close_duration(s_popup_window, pdc_duration);
+// #else
+//     popup_window_set_image(s_popup_window, RESOURCE_ID_IMAGE_STAR);
+//     popup_window_set_auto_close_duration(s_popup_window, 1000);
+// #endif
+//     popup_window_remove_action_bar(s_popup_window);
+//     popup_window_push(s_popup_window, true);
     // refresh now
     if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
 }
@@ -284,9 +284,6 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
 #endif
     popup_window_remove_action_bar(s_popup_window);
     popup_window_push(s_popup_window, true);
-
-    // refresh now
-    if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
 }
 
 
