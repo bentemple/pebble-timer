@@ -1,7 +1,7 @@
 {
   "uuid": "2389e202-3bdd-4f71-ab1c-4b76733410c5",
   "shortName": "Timer",
-  "longName": "Pebble Timer",
+  "longName": "Timer",
   "companyName": "Pebble",
   "versionLabel": "1.0",
   "sdkVersion": "3",
