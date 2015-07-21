@@ -138,7 +138,11 @@ static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer,
         COUNTDOWN_TIMER_SNOOZE_DELAY, false);
     countdown_timer_start(countdown_timer);
     popup_window_pop(s_popup_window, true);
-
+    // show detail if not on top
+    if (!detail_window_get_topmost_window(s_detail_window)) {
+        detail_window_set_countdown_timer(s_detail_window, countdown_timer);
+        detail_window_push(s_detail_window, false);
+    }
     // log activity
     last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
 }
