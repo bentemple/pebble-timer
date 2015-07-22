@@ -19,6 +19,8 @@
 
  // constants
 #define COUNTDOWN_TIMER_PERSIST_KEY 72445846
+#define PERSIST_VERSION 1
+#define PERSIST_VERSION_KEY 46134672
 #ifdef PBL_COLOR
 #define HIGHLIGHT_COLOR GColorPictonBlue
 #else
@@ -28,7 +30,7 @@
 #define COUNTDOWN_TIMER_SNOOZE_DELAY 60000
 #define TIMER_MIN_LENGTH 5000
 #define TIMELINE_MIN_LENGTH 900000
-#define INACTIVITY_THRESHOLD 300000 //< length of time before refresh throttling
+#define INACTIVITY_THRESHOLD 15000 //< length of time before refresh throttling
 #define INACTIVE_REFRESH_DELAY 1000 //< ms between frames after throttling
 
 
@@ -119,9 +121,14 @@ static void app_timer_callback(void *data) {
         refresh_rate = 20;
     if (refresh_rate == 0) return;
     // cap refresh rate if inactive
-    if (inactivity_duration > INACTIVITY_THRESHOLD)
+    if (inactivity_duration > INACTIVITY_THRESHOLD) {
         refresh_rate = (refresh_rate > INACTIVE_REFRESH_DELAY) ?
             refresh_rate : INACTIVE_REFRESH_DELAY;
+        detail_window_set_power_saver_mode(s_detail_window, true);
+    }
+    else {
+        detail_window_set_power_saver_mode(s_detail_window, false);
+    }
     s_app_timer = app_timer_register(refresh_rate, app_timer_callback, NULL);
 }
 
@@ -307,7 +314,7 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
     // show timer confirmation window
     popup_window_set_title(s_popup_window, "Timer Deleted");
 #ifdef PBL_SDK_3
-    popup_window_set_highlight_color(s_popup_window, GColorSunsetOrange);
+    popup_window_set_highlight_color(s_popup_window, HIGHLIGHT_COLOR);
     popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_DELETED, false);
     int64_t pdc_duration = popup_window_get_pdc_duration(s_popup_window);
     popup_window_set_auto_close_duration(s_popup_window, pdc_duration);
@@ -474,6 +481,7 @@ static void deinitialize(void) {
     phone_disconnect();
 
     // persist state
+    persist_write_int(PERSIST_VERSION_KEY, PERSIST_VERSION);
     countdown_timer_list_save(s_countdown_timers, s_countdown_timers_count,
         COUNTDOWN_TIMER_PERSIST_KEY);
     // schedule the wakeup
