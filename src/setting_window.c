@@ -69,8 +69,7 @@ struct SettingWindow {
 /*
  * update the sub text
  *
- * changes what is displayed in the sub text to different things, like
- * "Timer too short" or "End: 12:43"
+ * updates whether the end time is shown in the setting sub text
  */
 
 static void update_sub_text(SettingWindow *setting_window) {
@@ -79,7 +78,7 @@ static void update_sub_text(SettingWindow *setting_window) {
         (int64_t)setting_window->field_values[2] * 1000;
     // check duration
     if (duration < TIMER_MINIMUM_DURATION){
-        text_layer_set_text(setting_window->sub_text, "Timer too short");
+        text_layer_set_text(setting_window->sub_text, "");
         layer_set_hidden(text_layer_get_layer(setting_window->sub_text), false);
         return;
     }
@@ -218,7 +217,6 @@ SettingWindow *setting_window_create(
             setting_window->sub_text = text_layer_create(
                 GRect(1, 110, bounds.size.w, 40));
 #endif
-            text_layer_set_text(setting_window->sub_text, "Timer too short");
             text_layer_set_text_alignment(setting_window->sub_text,
                 GTextAlignmentCenter);
             text_layer_set_font(setting_window->sub_text,
@@ -343,6 +341,8 @@ void setting_window_set_timer(SettingWindow *setting_window,
     setting_window->field_values[0] = duration / 3600000;
     setting_window->field_values[1] = duration % 3600000 / 60000;
     setting_window->field_values[2] = duration % 60000 / 1000;
+    // change text
+    update_sub_text(setting_window);
 }
 
 
