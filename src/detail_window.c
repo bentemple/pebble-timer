@@ -76,6 +76,7 @@ struct DetailWindow {
     Bubble      bubbles[4];                 //< array of Bubble structures
     int64_t     bubble_last_release;        //< time since last bubble release
     bool        animation_update_needed;    //< whether it needs to be refreshed
+    bool        power_saver_mode;           //< whether it is in power saver mode or not
 
     CountdownTimer *countdown_timer;        //< the CountdownTimer being shown
 };
@@ -264,10 +265,19 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     graphics_draw_bitmap_in_rect(ctx, detail_window->waves_image, img_frame);
 #endif
 
-    // step bubbles
-    step_bubbles(detail_window, level);
-    // draw bubbles
-    draw_bubbles(detail_window, ctx, level);
+    if (!detail_window->power_saver_mode) {
+        // step bubbles
+        step_bubbles(detail_window, level);
+        // draw bubbles
+        draw_bubbles(detail_window, ctx, level);
+    }
+    else {
+        // draw text
+        graphics_context_set_text_color(ctx, GColorBlack);
+        graphics_draw_text(ctx, "Power Saver", fonts_get_system_font(FONT_KEY_GOTHIC_14),
+            GRect(0, 60, layer_get_bounds(detail_window->layer).size.w - ACTION_BAR_WIDTH, 35),
+            GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
+    }
 }
 
 
@@ -619,4 +629,14 @@ void detail_window_set_highlight_color(DetailWindow *detail_window,
 bool detail_window_get_update_needed(DetailWindow *detail_window) {
     return detail_window->animation_update_needed ||
         !countdown_timer_get_paused(detail_window->countdown_timer);
+}
+
+
+
+/*
+ * sets whether it is in power saver mode
+ */
+
+void detail_window_set_power_saver_mode(DetailWindow *detail_window, bool mode) {
+    detail_window->power_saver_mode = mode;
 }
