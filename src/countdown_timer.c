@@ -70,7 +70,7 @@
 struct CountdownTimer {
   int64_t     start_ms;     //< epoch of start time in milliseconds
   int64_t     duration_ms;  //< total duration in milliseconds
-  int32_t     ID;           //< random unique integer for timeline pins
+  int32_t     id;           //< random unique integer for timeline pins
   char        buff[16];     //< buffer for printing time string into
   bool        paused;       //< current state
 };
@@ -196,8 +196,7 @@ CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
   for (uint8_t ii = 0; ii < timer_array_count; ii++) {
     // check if expired and not paused
     if (!timer_array[ii]->paused &&
-      timer_array[ii]->start_ms + timer_array[ii]->duration_ms
-      <= now){
+      timer_array[ii]->start_ms + timer_array[ii]->duration_ms <= now){
       timer_array[ii]->start_ms = 0;
       timer_array[ii]->paused = true;
       if (return_timer == NULL) return_timer = timer_array[ii];
@@ -240,7 +239,7 @@ void countdown_timer_list_remove(CountdownTimer **timer_array,
   if (timer_array != NULL) {
     if (timer_index < (*timer_array_count)) {
       memmove(&timer_array[timer_index], &timer_array[timer_index + 1],
-        sizeof(CountdownTimer*) * ((*timer_array_count) - timer_index));
+        sizeof(CountdownTimer*) * ((*timer_array_count) - timer_index - 1));
     }
     (*timer_array_count)--;
     return;
@@ -324,6 +323,7 @@ void countdown_timer_list_destroy_all(CountdownTimer **timer_array,
   for (uint8_t ii = 0; ii < (*timer_array_count); ii++){
     countdown_timer_destroy(timer_array[ii]);
   }
+  (*timer_array_count) = 0;
 }
 
 
@@ -351,7 +351,13 @@ void countdown_timer_list_load(CountdownTimer **timer_array,
   (*timer_array_count) = persist_read_int(key++);
   for (uint8_t ii = 0; ii < (*timer_array_count); ii++){
     timer_array[ii] = (CountdownTimer*)malloc(sizeof(CountdownTimer));
-    persist_read_data(key++, timer_array[ii], sizeof(CountdownTimer));
+    if (timer_array[ii]) {
+      persist_read_data(key++, timer_array[ii], sizeof(CountdownTimer));
+    }
+    else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to allocate memory while loading timers!");
+      return;
+    }
   }
 }
 
@@ -394,21 +400,21 @@ int64_t countdown_timer_get_current_time(CountdownTimer *countdown_timer) {
 
 
 /*
- * gives the CountdownTimer a random new ID
+ * gives the CountdownTimer a random new id
  */
 
 void countdown_timer_rand_id(CountdownTimer *countdown_timer) {
-  countdown_timer->ID = rand() / 100;
+  countdown_timer->id = rand() / 100;
 }
 
 
 
 /*
- * gets the ID of the CountdownTimer
+ * gets the id of the CountdownTimer
  */
 
 int32_t countdown_timer_get_id(CountdownTimer *countdown_timer) {
-  return countdown_timer->ID;
+  return countdown_timer->id;
 }
 
 

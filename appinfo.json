@@ -112,13 +112,13 @@
       {
         "type": "png",
         "name": "IMAGE_DELETE",
-        "file": "images/action_bar_icon_x.png",
+        "file": "images/action_bar_icon_delete.png",
         "targetPlatforms": ["basalt"]
       },
       {
         "type": "png",
         "name": "IMAGE_DELETE",
-        "file": "images/action_bar_icon_x_bw.png",
+        "file": "images/action_bar_icon_delete_bw.png",
         "targetPlatforms": ["aplite"]
       },
       {

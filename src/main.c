@@ -45,7 +45,7 @@ static PopupWindow *s_popup_window = NULL;
 static uint8_t s_countdown_timers_count = 0;
 static CountdownTimer *s_countdown_timers[COUNTDOWN_TIMERS_MAX] = {};
 static AppTimer *s_app_timer = NULL;
-static int64_t last_activity = 0;
+static int64_t s_last_activity = 0;
 
 
 
@@ -95,7 +95,7 @@ static void app_timer_callback(void *data) {
     vibes_enqueue_custom_pattern(pat_vibe);
 
     // we want the alarm going off to count as activity
-    last_activity = countdown_timer_get_epoch_ms();
+    s_last_activity = countdown_timer_get_epoch_ms();
   }
 
   // refresh
@@ -107,7 +107,7 @@ static void app_timer_callback(void *data) {
   if (popup_top) popup_window_refresh(s_popup_window);
 
   // check activity
-  int64_t inactivity_duration = countdown_timer_get_epoch_ms() - last_activity;
+  int64_t inactivity_duration = countdown_timer_get_epoch_ms() - s_last_activity;
 
   // schedule next refresh
   uint16_t refresh_rate = 35;
@@ -150,7 +150,7 @@ static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer,
     detail_window_push(s_detail_window, false);
   }
   // log activity
-  last_activity = countdown_timer_get_epoch_ms();
+  s_last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -165,7 +165,7 @@ static void popup_window_stop_timer_callback(void *context) {
   popup_window_pop(s_popup_window, true);
 
   // log activity
-  last_activity = countdown_timer_get_epoch_ms();
+  s_last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -215,24 +215,11 @@ static void setting_window_complete_callback(int64_t duration, void *context){
     }
   }
 
-//     // show timer confirmation window
-//     popup_window_set_title(s_popup_window, "Timer set!");
-//     popup_window_set_highlight_color(s_popup_window, HIGHLIGHT_COLOR);
-// #ifdef PBL_SDK_3
-//     popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_CONFIRMATION, false);
-//     int64_t pdc_duration = popup_window_get_pdc_duration(s_popup_window);
-//     popup_window_set_auto_close_duration(s_popup_window, pdc_duration);
-// #else
-//     popup_window_set_image(s_popup_window, RESOURCE_ID_IMAGE_STAR);
-//     popup_window_set_auto_close_duration(s_popup_window, 1000);
-// #endif
-//     popup_window_remove_action_bar(s_popup_window);
-//     popup_window_push(s_popup_window, true);
   // refresh now
   if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
 
   // log activity
-  last_activity = countdown_timer_get_epoch_ms();
+  s_last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -248,7 +235,7 @@ static void detail_window_edit_timer_callback(CountdownTimer *countdown_timer,
   setting_window_push(s_setting_window, true);
 
   // log activity
-  last_activity = countdown_timer_get_epoch_ms();
+  s_last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -258,8 +245,7 @@ static void detail_window_edit_timer_callback(CountdownTimer *countdown_timer,
  * plays or pauses the timer currently in the detail view
  */
 
-static void detail_window_playpause_timer_callback(
-              CountdownTimer *countdown_timer,    void *context) {
+static void detail_window_playpause_timer_callback(CountdownTimer *countdown_timer, void *context) {
   if (countdown_timer_get_paused(countdown_timer)) {
     // push the Timeline pin
     if (countdown_timer_get_duration(countdown_timer) >=
@@ -282,7 +268,7 @@ static void detail_window_playpause_timer_callback(
   detail_window_deep_refresh(s_detail_window);
 
   // log activity
-  last_activity = countdown_timer_get_epoch_ms();
+  s_last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -325,7 +311,7 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
   popup_window_push(s_popup_window, true);
 
   // log activity
-  last_activity = countdown_timer_get_epoch_ms();
+  s_last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -379,7 +365,7 @@ static void menu_window_click_callback(uint8_t index, void *context) {
   }
 
   // log activity
-  last_activity = countdown_timer_get_epoch_ms();
+  s_last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -464,7 +450,7 @@ static void initialize(void) {
   s_app_timer = app_timer_register(5, app_timer_callback, NULL);
 
   // log activity
-  last_activity = countdown_timer_get_epoch_ms();
+  s_last_activity = countdown_timer_get_epoch_ms();
 }
 
 
