@@ -48,7 +48,7 @@
  */
 
 typedef void (*DetailWindowEdit)(CountdownTimer *countdown_timer,
-                                    void *context);
+                  void *context);
 
 
 
@@ -59,7 +59,7 @@ typedef void (*DetailWindowEdit)(CountdownTimer *countdown_timer,
  */
 
 typedef void (*DetailWindowPlayPause)(CountdownTimer *countdown_timer,
-                                    void *context);
+                  void *context);
 
 
 
@@ -70,7 +70,7 @@ typedef void (*DetailWindowPlayPause)(CountdownTimer *countdown_timer,
  */
 
 typedef void (*DetailWindowDelete)(CountdownTimer *countdown_timer,
-                                    void *context);
+                  void *context);
 
 
 
@@ -81,9 +81,9 @@ typedef void (*DetailWindowDelete)(CountdownTimer *countdown_timer,
  */
 
 typedef struct DetailWindowCallbacks {
-    DetailWindowEdit edit_timer;
-    DetailWindowPlayPause playpause_timer;
-    DetailWindowDelete delete_timer;
+  DetailWindowEdit edit_timer;
+  DetailWindowPlayPause playpause_timer;
+  DetailWindowDelete delete_timer;
 } DetailWindowCallbacks;
 
 
@@ -117,7 +117,7 @@ typedef struct DetailWindow DetailWindow;
  */
 
 DetailWindow *detail_window_create(
-                    DetailWindowCallbacks detail_window_callbacks);
+          DetailWindowCallbacks detail_window_callbacks);
 
 
 
@@ -183,7 +183,7 @@ bool detail_window_get_topmost_window(DetailWindow *detail_window);
  */
 
 void detail_window_set_countdown_timer(DetailWindow *detail_window,
-                                        CountdownTimer *countdown_timer);
+                    CountdownTimer *countdown_timer);
 
 
 
@@ -221,7 +221,7 @@ void detail_window_deep_refresh(DetailWindow *detail_window);
  */
 
 void detail_window_set_highlight_color(DetailWindow *detail_window,
-                                        GColor color);
+                    GColor color);
 
 
 
@@ -241,12 +241,12 @@ bool detail_window_get_update_needed(DetailWindow *detail_window);
 
 
 /*
- * Function:	detail_window_set_power_saver_mode
+ * Function:  detail_window_set_power_saver_mode
  * -----------------------------------------------
  * sets whether it is in power saver mode or not
  *
- *	detail_window: a pointer to the DetailWindow to set the mode of
- *	mode: a boolean for if it is on
+ *  detail_window: a pointer to the DetailWindow to set the mode of
+ *  mode: a boolean for if it is on
  */
 
 void detail_window_set_power_saver_mode(DetailWindow *detail_window, bool mode);

@@ -53,7 +53,7 @@ typedef void (*SettingWindowComplete)(int64_t time_duration, void *context);
  */
 
 typedef struct SettingWindowCallbacks {
-    SettingWindowComplete setting_complete;
+  SettingWindowComplete setting_complete;
 } SettingWindowCallbacks;
 
 
@@ -87,7 +87,7 @@ typedef struct SettingWindow SettingWindow;
  */
 
 SettingWindow *setting_window_create(
-                    SettingWindowCallbacks setting_window_callbacks);
+          SettingWindowCallbacks setting_window_callbacks);
 
 
 
@@ -153,7 +153,7 @@ bool setting_window_get_topmost_window(SettingWindow *setting_window);
  */
 
 void setting_window_set_timer(SettingWindow *setting_window,
-                                    CountdownTimer *countdown_timer);
+                  CountdownTimer *countdown_timer);
 
 
 
@@ -180,4 +180,4 @@ CountdownTimer *setting_window_get_timer(SettingWindow *setting_window);
  */
 
 void setting_window_set_highlight_color(SettingWindow *setting_window,
-                                        GColor color);
+                    GColor color);

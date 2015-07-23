@@ -60,7 +60,7 @@
  */
 
 typedef void (*PopupWindowUpClick)(CountdownTimer *countdown_timer,
-    void *context);
+  void *context);
 
 
 
@@ -91,9 +91,9 @@ typedef void (*PopupWindowDownClick)(void *context);
  */
 
 typedef struct PopupWindowCallbacks {
-    PopupWindowUpClick up_click;
-    PopupWindowSelectClick select_click;
-    PopupWindowDownClick down_click;
+  PopupWindowUpClick up_click;
+  PopupWindowSelectClick select_click;
+  PopupWindowDownClick down_click;
 } PopupWindowCallbacks;
 
 
@@ -191,7 +191,7 @@ bool popup_window_get_topmost_window(PopupWindow *popup_window);
  */
 
 void popup_window_set_auto_close_duration(PopupWindow *popup_window,
-    int64_t duration);
+  int64_t duration);
 
 
 
@@ -205,7 +205,7 @@ void popup_window_set_auto_close_duration(PopupWindow *popup_window,
  */
 
 void popup_window_set_countdown_timer(PopupWindow *popup_window,
-                                        CountdownTimer *countdown_timer);
+                    CountdownTimer *countdown_timer);
 
 
 
@@ -239,7 +239,7 @@ void popup_window_refresh(PopupWindow *popup_window);
  */
 
 void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id,
-    bool endless);
+  bool endless);
 
 
 
@@ -336,7 +336,7 @@ void popup_window_remove_action_bar(PopupWindow *popup_window);
  */
 
 void popup_window_set_action_bar_callbacks(PopupWindow *popup_window,
-    PopupWindowCallbacks callbacks);
+  PopupWindowCallbacks callbacks);
 
 
 

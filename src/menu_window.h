@@ -67,9 +67,9 @@ typedef void (*MenuWindowClickCallback)(uint8_t index, void *context);
  */
 
 typedef struct MenuWindowCallbacks {
-    MenuWindowGetTimer get_timer;
-    MenuWindowGetTimerCount get_timer_count;
-    MenuWindowClickCallback clicked;
+  MenuWindowGetTimer get_timer;
+  MenuWindowGetTimerCount get_timer_count;
+  MenuWindowClickCallback clicked;
 } MenuWindowCallbacks;
 
 
@@ -104,7 +104,7 @@ typedef struct MenuWindow MenuWindow;
  */
 
 MenuWindow *menu_window_create(MenuWindowCallbacks menu_window_callbacks,
-                                bool animated);
+                bool animated);
 
 
 
