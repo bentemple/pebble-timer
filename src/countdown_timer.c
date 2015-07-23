@@ -78,6 +78,16 @@ struct CountdownTimer {
 
 
 /*
+ * gets the current epoch time in ms
+ */
+
+int64_t countdown_timer_get_epoch_ms(void) {
+  return (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+}
+
+
+
+/*
  * creates a CountdownTimer and sets its values to defaults
  */
 
@@ -124,8 +134,7 @@ void countdown_timer_destroy(CountdownTimer *countdown_timer) {
 
 void countdown_timer_start(CountdownTimer *countdown_timer) {
   if (countdown_timer->paused){
-    countdown_timer->start_ms +=
-      (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+    countdown_timer->start_ms += countdown_timer_get_epoch_ms();
     countdown_timer->paused = false;
   }
 }
@@ -141,8 +150,7 @@ void countdown_timer_start(CountdownTimer *countdown_timer) {
 
 void countdown_timer_stop(CountdownTimer *countdown_timer) {
   if (!countdown_timer->paused){
-    countdown_timer->start_ms -=
-      (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+    countdown_timer->start_ms -= countdown_timer_get_epoch_ms();
     countdown_timer->paused = true;
     // give a new ID for pins
     countdown_timer_rand_id(countdown_timer);
@@ -162,7 +170,7 @@ void countdown_timer_update(CountdownTimer *countdown_timer, int64_t duration,
   bool update_duration) {
   if (countdown_timer->duration_ms < duration || update_duration)
     countdown_timer->duration_ms = duration;
-  int64_t now = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  int64_t now = countdown_timer_get_epoch_ms();
   countdown_timer->start_ms =  ((countdown_timer->paused) ? 0 : now)
     + duration - countdown_timer->duration_ms;
 }
@@ -180,7 +188,7 @@ CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
   uint8_t timer_array_count) {
   // get current time
   CountdownTimer *return_timer = NULL;
-  int64_t now = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  int64_t now = countdown_timer_get_epoch_ms();
   // loop over timers
   for (uint8_t ii = 0; ii < timer_array_count; ii++) {
     // check if expired and not paused
@@ -371,8 +379,7 @@ int64_t countdown_timer_get_start(CountdownTimer *countdown_timer) {
  */
 
 int64_t countdown_timer_get_current_time(CountdownTimer *countdown_timer) {
-  int64_t current_time = (int64_t)time(NULL) * 1000
-              + (int64_t)time_ms(NULL, NULL);
+  int64_t current_time = countdown_timer_get_epoch_ms();
   if (countdown_timer->start_ms != 0)
     current_time = countdown_timer->duration_ms - (current_time
       - ((countdown_timer->start_ms + current_time - 1) % current_time));

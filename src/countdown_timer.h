@@ -64,6 +64,18 @@
 
 
 /*
+ * Function:    countdown_timer_get_epoch_ms
+ * -----------------------------------------
+ * gets the current epoch time in milliseconds
+ *
+ *  returns: the epoch in ms
+ */
+
+int64_t countdown_timer_get_epoch_ms(void);
+
+
+
+/*
  * Structure:   CountdownTimer
  * ---------------------------
  * a structure defining the main "timer" type

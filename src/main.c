@@ -95,7 +95,7 @@ static void app_timer_callback(void *data) {
     vibes_enqueue_custom_pattern(pat_vibe);
 
     // we want the alarm going off to count as activity
-    last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+    last_activity = countdown_timer_get_epoch_ms();
   }
 
   // refresh
@@ -107,8 +107,7 @@ static void app_timer_callback(void *data) {
   if (popup_top) popup_window_refresh(s_popup_window);
 
   // check activity
-  int64_t inactivity_duration = (int64_t)time(NULL) * 1000 +
-    (int64_t)time_ms(NULL, NULL) - last_activity;
+  int64_t inactivity_duration = countdown_timer_get_epoch_ms() - last_activity;
 
   // schedule next refresh
   uint16_t refresh_rate = 35;
@@ -151,7 +150,7 @@ static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer,
     detail_window_push(s_detail_window, false);
   }
   // log activity
-  last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -166,7 +165,7 @@ static void popup_window_stop_timer_callback(void *context) {
   popup_window_pop(s_popup_window, true);
 
   // log activity
-  last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -233,7 +232,7 @@ static void setting_window_complete_callback(int64_t duration, void *context){
   if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
 
   // log activity
-  last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -249,7 +248,7 @@ static void detail_window_edit_timer_callback(CountdownTimer *countdown_timer,
   setting_window_push(s_setting_window, true);
 
   // log activity
-  last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -283,7 +282,7 @@ static void detail_window_playpause_timer_callback(
   detail_window_deep_refresh(s_detail_window);
 
   // log activity
-  last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -326,7 +325,7 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
   popup_window_push(s_popup_window, true);
 
   // log activity
-  last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -380,7 +379,7 @@ static void menu_window_click_callback(uint8_t index, void *context) {
   }
 
   // log activity
-  last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  last_activity = countdown_timer_get_epoch_ms();
 }
 
 
@@ -465,7 +464,7 @@ static void initialize(void) {
   s_app_timer = app_timer_register(5, app_timer_callback, NULL);
 
   // log activity
-  last_activity = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  last_activity = countdown_timer_get_epoch_ms();
 }
 
 
