@@ -68,11 +68,11 @@
  */
 
 struct CountdownTimer {
-  int64_t     start;      //< epoch of start time in milliseconds
-  int64_t     duration;   //< total duration in milliseconds
-  int32_t     ID;         //< random unique integer for timeline pins
-  char        buff[16];   //< buffer for printing time string into
-  bool        paused;     //< current state
+  int64_t     start_ms;     //< epoch of start time in milliseconds
+  int64_t     duration_ms;  //< total duration in milliseconds
+  int32_t     ID;           //< random unique integer for timeline pins
+  char        buff[16];     //< buffer for printing time string into
+  bool        paused;       //< current state
 };
 
 
@@ -85,8 +85,8 @@ CountdownTimer *countdown_timer_create(int64_t duration) {
   CountdownTimer *countdown_timer =
     (CountdownTimer*)malloc(sizeof(CountdownTimer));
   if (countdown_timer != NULL){
-    countdown_timer->start = 0;
-    countdown_timer->duration = duration;
+    countdown_timer->start_ms = 0;
+    countdown_timer->duration_ms = duration;
     countdown_timer->paused = true;
     countdown_timer_rand_id(countdown_timer);
     return countdown_timer;
@@ -123,7 +123,7 @@ void countdown_timer_destroy(CountdownTimer *countdown_timer) {
 
 void countdown_timer_start(CountdownTimer *countdown_timer) {
   if (countdown_timer->paused){
-    countdown_timer->start +=
+    countdown_timer->start_ms +=
       (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
     countdown_timer->paused = false;
   }
@@ -140,7 +140,7 @@ void countdown_timer_start(CountdownTimer *countdown_timer) {
 
 void countdown_timer_stop(CountdownTimer *countdown_timer) {
   if (!countdown_timer->paused){
-    countdown_timer->start -=
+    countdown_timer->start_ms -=
       (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
     countdown_timer->paused = true;
     // give a new ID for pins
@@ -159,11 +159,11 @@ void countdown_timer_stop(CountdownTimer *countdown_timer) {
 
 void countdown_timer_update(CountdownTimer *countdown_timer, int64_t duration,
   bool update_duration) {
-  if (countdown_timer->duration < duration || update_duration)
-    countdown_timer->duration = duration;
+  if (countdown_timer->duration_ms < duration || update_duration)
+    countdown_timer->duration_ms = duration;
   int64_t now = (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
-  countdown_timer->start =  ((countdown_timer->paused) ? 0 : now)
-    + duration - countdown_timer->duration;
+  countdown_timer->start_ms =  ((countdown_timer->paused) ? 0 : now)
+    + duration - countdown_timer->duration_ms;
 }
 
 
@@ -184,9 +184,9 @@ CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
   for (uint8_t ii = 0; ii < timer_array_count; ii++) {
     // check if expired and not paused
     if (!timer_array[ii]->paused &&
-      timer_array[ii]->start + timer_array[ii]->duration
+      timer_array[ii]->start_ms + timer_array[ii]->duration_ms
       <= now){
-      timer_array[ii]->start = 0;
+      timer_array[ii]->start_ms = 0;
       timer_array[ii]->paused = true;
       if (return_timer == NULL) return_timer = timer_array[ii];
     }
@@ -360,7 +360,7 @@ bool countdown_timer_get_paused(CountdownTimer *countdown_timer) {
  */
 
 int64_t countdown_timer_get_start(CountdownTimer *countdown_timer) {
-  return countdown_timer->start;
+  return countdown_timer->start_ms;
 }
 
 
@@ -372,11 +372,11 @@ int64_t countdown_timer_get_start(CountdownTimer *countdown_timer) {
 int64_t countdown_timer_get_current_time(CountdownTimer *countdown_timer) {
   int64_t current_time = (int64_t)time(NULL) * 1000
               + (int64_t)time_ms(NULL, NULL);
-  if (countdown_timer->start != 0)
-    current_time = countdown_timer->duration - (current_time
-      - ((countdown_timer->start + current_time - 1) % current_time));
+  if (countdown_timer->start_ms != 0)
+    current_time = countdown_timer->duration_ms - (current_time
+      - ((countdown_timer->start_ms + current_time - 1) % current_time));
   else
-    current_time = countdown_timer->duration;
+    current_time = countdown_timer->duration_ms;
   return current_time;
 }
 
@@ -407,7 +407,7 @@ int32_t countdown_timer_get_id(CountdownTimer *countdown_timer) {
  */
 
 int64_t countdown_timer_get_duration(CountdownTimer *countdown_timer) {
-  return countdown_timer->duration;
+  return countdown_timer->duration_ms;
 }
 
 
