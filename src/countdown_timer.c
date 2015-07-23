@@ -85,9 +85,10 @@ CountdownTimer *countdown_timer_create(int64_t duration) {
   CountdownTimer *countdown_timer =
     (CountdownTimer*)malloc(sizeof(CountdownTimer));
   if (countdown_timer != NULL){
-    countdown_timer->start_ms = 0;
-    countdown_timer->duration_ms = duration;
-    countdown_timer->paused = true;
+    (*countdown_timer) = (CountdownTimer) {
+      .duration_ms = duration,
+      .paused = true,
+    };
     countdown_timer_rand_id(countdown_timer);
     return countdown_timer;
   }
