@@ -82,7 +82,10 @@ struct CountdownTimer {
  */
 
 int64_t countdown_timer_get_epoch_ms(void) {
-  return (int64_t)time(NULL) * 1000 + (int64_t)time_ms(NULL, NULL);
+  time_t sec;
+  uint16_t msec;
+  time_ms(&sec, &msec);
+  return (int64_t)sec * 1000 + (int64_t)msec;
 }
 
 
