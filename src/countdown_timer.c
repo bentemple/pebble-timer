@@ -77,7 +77,7 @@ struct CountdownTimer {
   int32_t     id;           //< random unique integer for timeline pins
   char        buff[16];     //< buffer for printing time string into
   bool        paused;       //< current state
-};
+} __attribute__((__packed__));
 
 
 
