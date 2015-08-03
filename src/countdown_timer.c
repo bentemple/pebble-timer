@@ -61,6 +61,10 @@
 #include <pebble.h>
 #include "countdown_timer.h"
 
+#define MSEC_IN_SEC 1000
+#define MSEC_IN_MIN 60000
+#define MSEC_IN_HR 3600000
+
 
 
 /*
@@ -95,9 +99,8 @@ int64_t countdown_timer_get_epoch_ms(void) {
  */
 
 CountdownTimer *countdown_timer_create(int64_t duration) {
-  CountdownTimer *countdown_timer =
-    (CountdownTimer*)malloc(sizeof(CountdownTimer));
-  if (countdown_timer != NULL){
+  CountdownTimer *countdown_timer = (CountdownTimer*)malloc(sizeof(CountdownTimer));
+  if (countdown_timer != NULL) {
     (*countdown_timer) = (CountdownTimer) {
       .duration_ms = duration,
       .paused = true,
@@ -117,13 +120,8 @@ CountdownTimer *countdown_timer_create(int64_t duration) {
  */
 
 void countdown_timer_destroy(CountdownTimer *countdown_timer) {
-  if (countdown_timer != NULL){
-    free(countdown_timer);
-    countdown_timer = NULL;
-    return;
-  }
-  // error handling
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Attempted to destroy NULL CountdownTimer!");
+  free(countdown_timer);
+  countdown_timer = NULL;
 }
 
 
@@ -136,7 +134,7 @@ void countdown_timer_destroy(CountdownTimer *countdown_timer) {
  */
 
 void countdown_timer_start(CountdownTimer *countdown_timer) {
-  if (countdown_timer->paused){
+  if (countdown_timer->paused) {
     countdown_timer->start_ms += countdown_timer_get_epoch_ms();
     countdown_timer->paused = false;
   }
@@ -152,7 +150,7 @@ void countdown_timer_start(CountdownTimer *countdown_timer) {
  */
 
 void countdown_timer_stop(CountdownTimer *countdown_timer) {
-  if (!countdown_timer->paused){
+  if (!countdown_timer->paused) {
     countdown_timer->start_ms -= countdown_timer_get_epoch_ms();
     countdown_timer->paused = true;
     // give a new ID for pins
@@ -170,9 +168,10 @@ void countdown_timer_stop(CountdownTimer *countdown_timer) {
  */
 
 void countdown_timer_update(CountdownTimer *countdown_timer, int64_t duration,
-  bool update_duration) {
-  if (countdown_timer->duration_ms < duration || update_duration)
+    bool update_duration) {
+  if (countdown_timer->duration_ms < duration || update_duration) {
     countdown_timer->duration_ms = duration;
+  }
   int64_t now = countdown_timer_get_epoch_ms();
   countdown_timer->start_ms =  ((countdown_timer->paused) ? 0 : now)
     + duration - countdown_timer->duration_ms;
@@ -188,7 +187,7 @@ void countdown_timer_update(CountdownTimer *countdown_timer, int64_t duration,
  */
 
 CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
-  uint8_t timer_array_count) {
+                                            uint8_t timer_array_count) {
   // get current time
   CountdownTimer *return_timer = NULL;
   int64_t now = countdown_timer_get_epoch_ms();
@@ -196,10 +195,12 @@ CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
   for (uint8_t ii = 0; ii < timer_array_count; ii++) {
     // check if expired and not paused
     if (!timer_array[ii]->paused &&
-      timer_array[ii]->start_ms + timer_array[ii]->duration_ms <= now){
+        timer_array[ii]->start_ms + timer_array[ii]->duration_ms <= now) {
       timer_array[ii]->start_ms = 0;
       timer_array[ii]->paused = true;
-      if (return_timer == NULL) return_timer = timer_array[ii];
+      if (return_timer == NULL) {
+        return_timer = timer_array[ii];
+      }
     }
   }
   return return_timer;
@@ -213,15 +214,15 @@ CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
  * indexes CountdownTimer count as well, and pops oldest CountdownTimer if full
  */
 
-void countdown_timer_list_add(CountdownTimer **timer_array,
-            uint8_t timer_array_max, uint8_t *timer_array_count,
-            CountdownTimer *countdown_timer) {
-  if ((*timer_array_count) == timer_array_max)
+void countdown_timer_list_add(CountdownTimer **timer_array, uint8_t timer_array_max,
+                              uint8_t *timer_array_count, CountdownTimer *countdown_timer) {
+  if ((*timer_array_count) == timer_array_max) {
     countdown_timer_destroy(timer_array[timer_array_max - 1]);
-  else
+  }
+  else {
     (*timer_array_count)++;
-  memmove(&timer_array[1], &timer_array[0],
-    sizeof(CountdownTimer*) * (timer_array_max - 1));
+  }
+  memmove(&timer_array[1], &timer_array[0], sizeof(CountdownTimer*) * (timer_array_max - 1));
   timer_array[0] = countdown_timer;
 }
 
@@ -234,19 +235,19 @@ void countdown_timer_list_add(CountdownTimer **timer_array,
  * also decreases array size by one and moves memory to fill empty place
  */
 
-void countdown_timer_list_remove(CountdownTimer **timer_array,
-  uint8_t *timer_array_count, uint8_t timer_index) {
-  if (timer_array != NULL) {
-    if (timer_index < (*timer_array_count)) {
-      memmove(&timer_array[timer_index], &timer_array[timer_index + 1],
-        sizeof(CountdownTimer*) * ((*timer_array_count) - timer_index - 1));
-    }
-    (*timer_array_count)--;
+void countdown_timer_list_remove(CountdownTimer **timer_array, uint8_t *timer_array_count,
+                                 uint8_t timer_index) {
+  // check inputs
+  if (timer_array == NULL || (*timer_array_count) == 0) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Attempted to remove CountdownTimer from NULL or empty array");
     return;
   }
-  // error logging
-  APP_LOG(APP_LOG_LEVEL_ERROR,
-    "Attempted to remove CountdownTimer from NULL array");
+  // remove the timer
+  if (timer_index < (*timer_array_count)) {
+    memmove(&timer_array[timer_index], &timer_array[timer_index + 1],
+      sizeof(CountdownTimer*) * ((*timer_array_count) - timer_index - 1));
+    (*timer_array_count)--;
+  }
 }
 
 
@@ -259,10 +260,18 @@ void countdown_timer_list_remove(CountdownTimer **timer_array,
  */
 
 int16_t countdown_timer_list_get_timer_index(CountdownTimer **timer_array,
-        uint8_t timer_array_count, CountdownTimer *countdown_timer) {
-  for (uint8_t ii = 0; ii < timer_array_count; ii++)
-    if (timer_array[ii] == countdown_timer)
+    uint8_t timer_array_count, CountdownTimer *countdown_timer) {
+  // check inputs
+  if (timer_array == NULL || timer_array_count == 0) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Attempted to find CountdownTimer in NULL or empty array");
+    return -1;
+  }
+  // find timer
+  for (uint8_t ii = 0; ii < timer_array_count; ii++) {
+    if (timer_array[ii] == countdown_timer) {
       return ii;
+    }
+  }
   // if it failed to find the pointer
   return -1;
 }
@@ -275,19 +284,16 @@ int16_t countdown_timer_list_get_timer_index(CountdownTimer **timer_array,
  * finds the CountdownTimer with the least time left and returns a pointer to it
  */
 
-CountdownTimer *countdown_timer_list_get_closest_timer(
-  CountdownTimer **timer_array, uint8_t timer_array_count) {
+CountdownTimer *countdown_timer_list_get_closest_timer(CountdownTimer **timer_array,
+                                                       uint8_t timer_array_count) {
   CountdownTimer *countdown_timer = NULL;
   for (uint8_t ii = 0; ii < timer_array_count; ii++){
-    if (!countdown_timer_get_paused(timer_array[ii])) {
-      if (countdown_timer !=  NULL) {
-        if (countdown_timer_get_current_time(timer_array[ii]) <
-        countdown_timer_get_current_time(countdown_timer)) {
-          countdown_timer = timer_array[ii];
-        }
-      }
-      else
-        countdown_timer = timer_array[ii];
+    if (countdown_timer_get_paused(timer_array[ii])) {
+      continue;
+    }
+    if (countdown_timer ==  NULL || countdown_timer_get_current_time(timer_array[ii]) <
+          countdown_timer_get_current_time(countdown_timer)) {
+      countdown_timer = timer_array[ii];
     }
   }
   return countdown_timer;
@@ -299,11 +305,12 @@ CountdownTimer *countdown_timer_list_get_closest_timer(
  * gets a CountdownTimer by its ID or returns NULL if none were found
  */
 
-CountdownTimer *countdown_timer_list_get_timer_by_id(
-  CountdownTimer **timer_array, uint8_t timer_array_count, int32_t id) {
+CountdownTimer *countdown_timer_list_get_timer_by_id(CountdownTimer **timer_array,
+                                                     uint8_t timer_array_count, int32_t id) {
   for (uint8_t ii = 0; ii < timer_array_count; ii++){
-    if (countdown_timer_get_id(timer_array[ii]) == id)
+    if (countdown_timer_get_id(timer_array[ii]) == id) {
       return timer_array[ii];
+    }
   }
   // no match was found
   return NULL;
@@ -318,8 +325,7 @@ CountdownTimer *countdown_timer_list_get_timer_by_id(
  * which checks for NULL pointers automatically
  */
 
-void countdown_timer_list_destroy_all(CountdownTimer **timer_array,
-                  uint8_t *timer_array_count) {
+void countdown_timer_list_destroy_all(CountdownTimer **timer_array, uint8_t *timer_array_count) {
   for (uint8_t ii = 0; ii < (*timer_array_count); ii++){
     countdown_timer_destroy(timer_array[ii]);
   }
@@ -332,8 +338,8 @@ void countdown_timer_list_destroy_all(CountdownTimer **timer_array,
  * saves all the timers to persistent storage
  */
 
-void countdown_timer_list_save(CountdownTimer **timer_array,
-                uint8_t timer_array_count, uint32_t key) {
+void countdown_timer_list_save(CountdownTimer **timer_array, uint8_t timer_array_count,
+                               uint32_t key) {
   persist_write_int(key++, timer_array_count);
   for (uint8_t ii = 0; ii < timer_array_count; ii++){
     persist_write_data(key++, timer_array[ii], sizeof(CountdownTimer));
@@ -346,10 +352,10 @@ void countdown_timer_list_save(CountdownTimer **timer_array,
  * loads all timers from persistent storage
  */
 
-void countdown_timer_list_load(CountdownTimer **timer_array,
-                uint8_t *timer_array_count, uint32_t key) {
+void countdown_timer_list_load(CountdownTimer **timer_array, uint8_t *timer_array_count,
+                               uint32_t key) {
   (*timer_array_count) = persist_read_int(key++);
-  for (uint8_t ii = 0; ii < (*timer_array_count); ii++){
+  for (uint8_t ii = 0; ii < (*timer_array_count); ii++) {
     timer_array[ii] = (CountdownTimer*)malloc(sizeof(CountdownTimer));
     if (timer_array[ii]) {
       persist_read_data(key++, timer_array[ii], sizeof(CountdownTimer));
@@ -389,11 +395,13 @@ int64_t countdown_timer_get_start(CountdownTimer *countdown_timer) {
 
 int64_t countdown_timer_get_current_time(CountdownTimer *countdown_timer) {
   int64_t current_time = countdown_timer_get_epoch_ms();
-  if (countdown_timer->start_ms != 0)
-    current_time = countdown_timer->duration_ms - (current_time
-      - ((countdown_timer->start_ms + current_time - 1) % current_time));
-  else
+  if (countdown_timer->start_ms != 0) {
+    current_time = countdown_timer->duration_ms -
+      (current_time - ((countdown_timer->start_ms + current_time - 1) % current_time));
+  }
+  else {
     current_time = countdown_timer->duration_ms;
+  }
   return current_time;
 }
 
@@ -404,7 +412,11 @@ int64_t countdown_timer_get_current_time(CountdownTimer *countdown_timer) {
  */
 
 void countdown_timer_rand_id(CountdownTimer *countdown_timer) {
-  countdown_timer->id = rand() / 100;
+  // set the id equal to the timers pointer
+  // this is guarantied to be unique and since only the last 16 bits of the pointer are used
+  // in pebble's memory addresses, the value is also guarantied to be small enough
+  // for my other functions (embedding the pin actions into the id for the pin)
+  countdown_timer->id = (intptr_t)countdown_timer;
 }
 
 
@@ -444,13 +456,15 @@ char *countdown_timer_get_buffer(CountdownTimer *countdown_timer) {
  */
 
 void countdown_timer_format_text(int64_t value, char *buff, uint8_t size) {
-  uint8_t hr = value / 3600000;
-  uint8_t min = value % 3600000 / 60000;
-  uint8_t sec = value % 60000 / 1000;
-  if (hr > 0)
+  uint8_t hr = value / MSEC_IN_HR;
+  uint8_t min = value % MSEC_IN_HR / MSEC_IN_MIN;
+  uint8_t sec = value % MSEC_IN_MIN / MSEC_IN_SEC;
+  if (hr > 0) {
     snprintf(buff, size, "%d:%02d:%02d", hr, min, sec);
-  else
+  }
+  else {
     snprintf(buff, size, "%d:%02d", min, sec);
+  }
 }
 
 
@@ -461,8 +475,7 @@ void countdown_timer_format_text(int64_t value, char *buff, uint8_t size) {
  */
 
 char *countdown_timer_format_own_buff(CountdownTimer *countdown_timer) {
-  countdown_timer_format_text(
-    countdown_timer_get_current_time(countdown_timer),
+  countdown_timer_format_text(countdown_timer_get_current_time(countdown_timer),
     countdown_timer->buff, sizeof(countdown_timer->buff));
   return countdown_timer->buff;
 }

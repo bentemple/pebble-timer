@@ -7,11 +7,6 @@
 #pragma once
 
 #include "pebble.h"
-// #include "click.h"
-// #include "layer.h"
-// #include "property_animation.h"
-// #include "applib/fonts/fonts.h"
-
 
 #define MAX_SELECTION_LAYER_CELLS 3
 
@@ -19,9 +14,11 @@ typedef char* (*SelectionLayerGetCellText)(unsigned index, void *callback_contex
 
 typedef void (*SelectionLayerCompleteCallback)(void *callback_context);
 
-typedef void (*SelectionLayerIncrementCallback)(unsigned selected_cell_idx, uint8_t reapeating_count, void *callback_context);
+typedef void (*SelectionLayerIncrementCallback)(unsigned selected_cell_idx,
+                                                uint8_t reapeating_count, void *callback_context);
 
-typedef void (*SelectionLayerDecrementCallback)(unsigned selected_cell_idx, uint8_t reapeating_count, void *callback_context);
+typedef void (*SelectionLayerDecrementCallback)(unsigned selected_cell_idx,
+                                                uint8_t reapeating_count, void *callback_context);
 
 typedef struct SelectionLayerCallbacks {
   SelectionLayerGetCellText get_cell_text;
@@ -32,7 +29,6 @@ typedef struct SelectionLayerCallbacks {
 
 
 typedef struct SelectionLayerData {
-  //Layer *layer;
 #ifndef PBL_COLOR
   InverterLayer *inverter;
 #endif
@@ -69,7 +65,8 @@ typedef struct SelectionLayerData {
 
 
 
-Layer* selection_layer_init(SelectionLayerData *selection_layer_data, GRect frame, unsigned num_cells);
+Layer* selection_layer_init(SelectionLayerData *selection_layer_data, GRect frame,
+                            unsigned num_cells);
 
 Layer* selection_layer_create(GRect frame, unsigned num_cells);
 
@@ -77,8 +74,7 @@ void selection_layer_deinit(Layer* layer);
 
 void selection_layer_destroy(Layer* layer);
 
-void selection_layer_set_cell_width(Layer *layer,
-                                    unsigned cell_idx, unsigned width);
+void selection_layer_set_cell_width(Layer *layer, unsigned cell_idx, unsigned width);
 
 void selection_layer_set_font(Layer *layer, GFont font);
 
@@ -91,9 +87,7 @@ void selection_layer_set_cell_padding(Layer *layer, unsigned padding);
 // When transitioning from inactive -> active, the selected cell will be index 0
 void selection_layer_set_active(Layer *layer, bool is_active);
 
-void selection_layer_set_click_config_onto_window(Layer *layer,
-                                                  struct Window *window);
+void selection_layer_set_click_config_onto_window(Layer *layer, struct Window *window);
 
-void selection_layer_set_callbacks(Layer *layer,
-                                   void *callback_context,
+void selection_layer_set_callbacks(Layer *layer, void *callback_context,
                                    SelectionLayerCallbacks callbacks);

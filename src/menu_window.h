@@ -103,8 +103,7 @@ typedef struct MenuWindow MenuWindow;
  *  returns: a pointer to a new MenuWindow structure
  */
 
-MenuWindow *menu_window_create(MenuWindowCallbacks menu_window_callbacks,
-                bool animated);
+MenuWindow *menu_window_create(MenuWindowCallbacks menu_window_callbacks, bool animated);
 
 
 

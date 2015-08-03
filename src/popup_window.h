@@ -59,8 +59,7 @@
  * called when the UP button is pressed
  */
 
-typedef void (*PopupWindowUpClick)(CountdownTimer *countdown_timer,
-  void *context);
+typedef void (*PopupWindowUpClick)(CountdownTimer *countdown_timer, void *context);
 
 
 
@@ -190,8 +189,7 @@ bool popup_window_get_topmost_window(PopupWindow *popup_window);
  *  duration: an int64_t for the millisecond duration after which to pop
  */
 
-void popup_window_set_auto_close_duration(PopupWindow *popup_window,
-  int64_t duration);
+void popup_window_set_auto_close_duration(PopupWindow *popup_window, int64_t duration);
 
 
 
@@ -204,8 +202,7 @@ void popup_window_set_auto_close_duration(PopupWindow *popup_window,
  *  countdown_timer: a pointer to the CountdownTimer being assigned the window
  */
 
-void popup_window_set_countdown_timer(PopupWindow *popup_window,
-                    CountdownTimer *countdown_timer);
+void popup_window_set_countdown_timer(PopupWindow *popup_window, CountdownTimer *countdown_timer);
 
 
 
@@ -238,8 +235,7 @@ void popup_window_refresh(PopupWindow *popup_window);
  *  resource_id: a RESOURCE_ID_XXX to the PDC to be displayed
  */
 
-void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id,
-  bool endless);
+void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id, bool endless);
 
 
 
@@ -336,7 +332,7 @@ void popup_window_remove_action_bar(PopupWindow *popup_window);
  */
 
 void popup_window_set_action_bar_callbacks(PopupWindow *popup_window,
-  PopupWindowCallbacks callbacks);
+                                           PopupWindowCallbacks callbacks);
 
 
 

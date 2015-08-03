@@ -27,11 +27,6 @@
         "file": "drawing/pebble_80x80_deleted.pdc"
       },
       {
-        "type": "raw",
-        "name": "ICON_CONFIRMATION",
-        "file": "drawing/pebble_80x80_generic_confirmation.pdc"
-      },
-      {
         "characterRegex": "[0-9:]",
         "type": "font",
         "name": "FONT_LECO_REGULAR_SUBSET_20",

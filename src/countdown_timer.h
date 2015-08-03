@@ -147,7 +147,7 @@ void countdown_timer_stop(CountdownTimer *countdown_timer);
  */
 
 void countdown_timer_update(CountdownTimer *countdown_timer, int64_t duration,
-  bool update_duration);
+                            bool update_duration);
 
 
 
@@ -164,7 +164,7 @@ void countdown_timer_update(CountdownTimer *countdown_timer, int64_t duration,
  */
 
 CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
-  uint8_t timer_array_count);
+                                            uint8_t timer_array_count);
 
 
 
@@ -180,9 +180,8 @@ CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
  *  countdown_timer: a pointer to the timer being added
  */
 
-void countdown_timer_list_add(CountdownTimer **timer_array,
-  uint8_t timer_array_max, uint8_t *timer_array_count,
-  CountdownTimer *countdown_timer);
+void countdown_timer_list_add(CountdownTimer **timer_array, uint8_t timer_array_max,
+                              uint8_t *timer_array_count, CountdownTimer *countdown_timer);
 
 
 
@@ -197,8 +196,8 @@ void countdown_timer_list_add(CountdownTimer **timer_array,
  *  timer_index: the index of the timer pointer to be removed
  */
 
-void countdown_timer_list_remove(CountdownTimer **timer_array,
-  uint8_t *timer_array_count, uint8_t timer_index);
+void countdown_timer_list_remove(CountdownTimer **timer_array, uint8_t *timer_array_count,
+                                 uint8_t timer_index);
 
 
 
@@ -215,7 +214,7 @@ void countdown_timer_list_remove(CountdownTimer **timer_array,
  */
 
 int16_t countdown_timer_list_get_timer_index(CountdownTimer **timer_array,
-        uint8_t timer_array_count, CountdownTimer *countdown_timer);
+    uint8_t timer_array_count, CountdownTimer *countdown_timer);
 
 
 
@@ -230,8 +229,8 @@ int16_t countdown_timer_list_get_timer_index(CountdownTimer **timer_array,
  *  returns: a pointer to the closest to ended CountdownTimer
  */
 
-CountdownTimer *countdown_timer_list_get_closest_timer(
-  CountdownTimer **timer_array, uint8_t timer_array_count);
+CountdownTimer *countdown_timer_list_get_closest_timer(CountdownTimer **timer_array,
+                                                       uint8_t timer_array_count);
 
 
 
@@ -247,8 +246,8 @@ CountdownTimer *countdown_timer_list_get_closest_timer(
  *  returns: a pointer to a CountdownTimer or NULL if none were found to match
  */
 
-CountdownTimer *countdown_timer_list_get_timer_by_id(
-  CountdownTimer **timer_array, uint8_t timer_array_count, int32_t id);
+CountdownTimer *countdown_timer_list_get_timer_by_id(CountdownTimer **timer_array,
+                                                     uint8_t timer_array_count, int32_t id);
 
 
 
@@ -261,8 +260,7 @@ CountdownTimer *countdown_timer_list_get_timer_by_id(
  *  timer_array_count: the number of timers in the array
  */
 
-void countdown_timer_list_destroy_all(CountdownTimer **timer_array,
-                  uint8_t *timer_array_count);
+void countdown_timer_list_destroy_all(CountdownTimer **timer_array, uint8_t *timer_array_count);
 
 
 
@@ -276,8 +274,8 @@ void countdown_timer_list_destroy_all(CountdownTimer **timer_array,
  *  key: the key to save data with, will be indexed each save
  */
 
-void countdown_timer_list_save(CountdownTimer **timer_array,
-                uint8_t timer_array_count, uint32_t key);
+void countdown_timer_list_save(CountdownTimer **timer_array, uint8_t timer_array_count,
+                               uint32_t key);
 
 
 
@@ -288,8 +286,8 @@ void countdown_timer_list_save(CountdownTimer **timer_array,
  * this also creates memory for the timers
  */
 
-void countdown_timer_list_load(CountdownTimer **timer_array,
-                uint8_t *timer_array_count, uint32_t key);
+void countdown_timer_list_load(CountdownTimer **timer_array, uint8_t *timer_array_count,
+                               uint32_t key);
 
 
 

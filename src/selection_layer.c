@@ -7,13 +7,6 @@
 #include "pebble.h"
 #include "selection_layer.h"
 
-// #include "applib/applib_malloc.auto.h"
-// #include "applib/graphics/graphics.h"
-// #include "applib/graphics/text.h"
-// #include "applib/ui/window_private.h"
-
-// #include "system/logging.h"
-
 // Look and feel
 #define DEFAULT_CELL_PADDING 10
 #define DEFAULT_SELECTED_INDEX 0
@@ -650,6 +643,7 @@ static void prv_click_config_provider(Layer *layer) {
 Layer* selection_layer_init(SelectionLayerData *selection_layer_, GRect frame, unsigned num_cells) {
   if (num_cells > MAX_SELECTION_LAYER_CELLS) {
     num_cells = MAX_SELECTION_LAYER_CELLS;
+    APP_LOG(APP_LOG_LEVEL_INFO, "Too many cells, reduced to MAX_SELECTION_LAYER_CELLS");
   }
   Layer *layer = layer_create_with_data(frame, sizeof(SelectionLayerData));
   SelectionLayerData *selection_layer_data = layer_get_data(layer);
@@ -683,8 +677,7 @@ Layer* selection_layer_init(SelectionLayerData *selection_layer_, GRect frame, u
 }
 
 Layer* selection_layer_create(GRect frame, unsigned num_cells) {
-// Note: Not yet exported to 3rd party apps so no padding needed
-  SelectionLayerData *selection_layer_data = NULL; // = (SelectionLayerData*)malloc(sizeof(SelectionLayerData));
+  SelectionLayerData *selection_layer_data = NULL;
   Layer *layer = selection_layer_init(selection_layer_data, frame, num_cells);
   return layer;
 }
@@ -715,7 +708,8 @@ void selection_layer_set_cell_width(Layer *layer, unsigned idx, unsigned width) 
     data->cell_widths[idx] = width;
   }
 #ifndef PBL_COLOR
-  layer_set_bounds(inverter_layer_get_layer(data->inverter), GRect(0, 0, width, layer_get_bounds(inverter_layer_get_layer(data->inverter)).size.h));
+  layer_set_bounds(inverter_layer_get_layer(data->inverter),
+    GRect(0, 0, width, layer_get_bounds(inverter_layer_get_layer(data->inverter)).size.h));
 #endif
 }
 

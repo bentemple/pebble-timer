@@ -95,57 +95,62 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
   PopupWindow *popup_window = (*(PopupWindow**)layer_get_data(layer));
   // draw current PDC frame or image
 #ifdef PBL_SDK_3
-  if (popup_window->draw_sequence != NULL)
+  if (popup_window->draw_sequence != NULL) {
     gdraw_command_frame_draw(ctx, popup_window->draw_sequence,
       popup_window->draw_frame, GPointZero);
+  }
 #else
-  if (popup_window->image != NULL)
-    graphics_draw_bitmap_in_rect(ctx, popup_window->image,
-      gbitmap_get_bounds(popup_window->image));
+  if (popup_window->image != NULL) {
+    graphics_draw_bitmap_in_rect(ctx, popup_window->image, gbitmap_get_bounds(popup_window->image));
+  }
 #endif
 }
 
 
 
 /*
- * resize the layer based on PDC or image size
- * this centers the image in the window, accounting for the potential
+ * resize the layers based on PDC or image size
+ * this centers the layers in the window, accounting for the potential
  * ActionBarLayer
  */
 
-static void layer_center_in_window(PopupWindow *popup_window) {
+static void layers_center_in_window(PopupWindow *popup_window) {
 #ifdef PBL_SDK_3
   // change layer size based on PDC size, to center PDC
-  GSize pdc_frame =
-    gdraw_command_sequence_get_bounds_size(popup_window->draw_sequence);
-  GRect window_frame =
-    layer_get_frame(window_get_root_layer(popup_window->window));
+  GSize pdc_frame = gdraw_command_sequence_get_bounds_size(popup_window->draw_sequence);
+  GRect window_frame = layer_get_frame(window_get_root_layer(popup_window->window));
   GRect layer_frame = GRect(0, 0, pdc_frame.w, pdc_frame.h);
-  if (popup_window->action_visible)
-    layer_frame.origin.x =
-      (window_frame.size.w - ACTION_BAR_WIDTH) / 2 - pdc_frame.w / 2;
-  else
+  if (popup_window->action_visible) {
+    layer_frame.origin.x = (window_frame.size.w - ACTION_BAR_WIDTH) / 2 - pdc_frame.w / 2;
+  }
+  else {
     layer_frame.origin.x = window_frame.size.w / 2 - pdc_frame.w / 2;
+  }
   layer_frame.origin.y = window_frame.size.h / 2 - pdc_frame.h / 2;
   layer_set_frame(popup_window->layer, layer_frame);
 #else
   // change layer size based on image size, to center image
-  GRect image_frame =
-    gbitmap_get_bounds(popup_window->image);
-  GRect window_frame =
-    layer_get_frame(window_get_root_layer(popup_window->window));
+  GRect image_frame = gbitmap_get_bounds(popup_window->image);
+  GRect window_frame = layer_get_frame(window_get_root_layer(popup_window->window));
   GRect layer_frame = image_frame;
-  if (popup_window->action_visible)
-    layer_frame.origin.x =
-      (window_frame.size.w - ACTION_BAR_WIDTH) / 2 -
-      image_frame.size.w / 2;
-  else
+  if (popup_window->action_visible) {
+    layer_frame.origin.x = (window_frame.size.w - ACTION_BAR_WIDTH) / 2 - image_frame.size.w / 2;
+  }
+  else {
     layer_frame.origin.x = window_frame.size.w / 2 - image_frame.size.w / 2;
-  layer_frame.origin.y = window_frame.size.h / 2 -
-    image_frame.size.h / 2 - 7;
+  }
+  layer_frame.origin.y = window_frame.size.h / 2 - image_frame.size.h / 2 - 7;
   layer_set_frame(popup_window->layer, layer_frame);
 #endif
- }
+
+  // center the text layer
+  GRect text_frame = layer_get_frame(text_layer_get_layer(popup_window->text));
+  text_frame.size.w = layer_get_bounds(window_get_root_layer(popup_window->window)).size.w -
+    ((popup_window->action_visible) ? ACTION_BAR_WIDTH : 0);
+  layer_set_frame(text_layer_get_layer(popup_window->text), text_frame);
+  text_frame.origin.x = text_frame.origin.y = 0;
+  layer_set_bounds(text_layer_get_layer(popup_window->text), text_frame);
+}
 
 
 
@@ -161,10 +166,10 @@ static void layer_center_in_window(PopupWindow *popup_window) {
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   PopupWindow *popup_window = (PopupWindow*)context;
-  if (popup_window->callbacks.up_click == NULL)
+  if (popup_window->callbacks.up_click == NULL) {
     return;
-  return popup_window->callbacks.up_click(popup_window->countdown_timer,
-                        context);
+  }
+  return popup_window->callbacks.up_click(popup_window->countdown_timer, context);
 }
 
 
@@ -177,8 +182,9 @@ static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   PopupWindow *popup_window = (PopupWindow*)context;
-  if (popup_window->callbacks.select_click == NULL)
+  if (popup_window->callbacks.select_click == NULL) {
     return;
+  }
   return popup_window->callbacks.select_click(context);
 }
 
@@ -192,8 +198,9 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   PopupWindow *popup_window = (PopupWindow*)context;
-  if (popup_window->callbacks.down_click == NULL)
+  if (popup_window->callbacks.down_click == NULL) {
     return;
+  }
   return popup_window->callbacks.down_click(context);
 }
 
@@ -247,10 +254,8 @@ PopupWindow *popup_window_create(void) {
     });
     if (popup_window->window != NULL) {
       // load some resources
-      popup_window->stop_icon =
-        gbitmap_create_with_resource(RESOURCE_ID_IMAGE_DISMISS);
-      popup_window->snooze_icon =
-        gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SNOOZE);
+      popup_window->stop_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_DISMISS);
+      popup_window->snooze_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SNOOZE);
 
       // zero some values
       popup_window->countdown_timer = NULL;
@@ -269,37 +274,28 @@ PopupWindow *popup_window_create(void) {
       // create layer
       // IMPORTANT: must be created with data for the PopupWindow pointer
       // so that it can be accessed in the layer_update_proc callback
-      popup_window->layer = layer_create_with_data(bounds,
-        sizeof(PopupWindow*));
-      PopupWindow **layer_data =
-        (PopupWindow**)layer_get_data(popup_window->layer);
+      popup_window->layer = layer_create_with_data(bounds, sizeof(PopupWindow*));
+      PopupWindow **layer_data = (PopupWindow**)layer_get_data(popup_window->layer);
       (*layer_data) = popup_window;
       layer_set_clips(popup_window->layer, false);
       layer_set_update_proc(popup_window->layer, layer_update_proc);
       layer_add_child(root, popup_window->layer);
       // text
 #ifdef PBL_SDK_3
-      popup_window->text = text_layer_create(
-        GRect(0, 125, bounds.size.w, 36));
+      popup_window->text = text_layer_create(GRect(0, 125, bounds.size.w, 36));
 #else
-      popup_window->text = text_layer_create(
-        GRect(0, 110, bounds.size.w, 36));
+      popup_window->text = text_layer_create(GRect(0, 110, bounds.size.w, 36));
 #endif
-      text_layer_set_font(popup_window->text,
-        fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-      text_layer_set_text_alignment(popup_window->text,
-        GTextAlignmentCenter);
+      text_layer_set_font(popup_window->text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+      text_layer_set_text_alignment(popup_window->text, GTextAlignmentCenter);
       text_layer_set_background_color(popup_window->text, GColorClear);
       layer_add_child(root, text_layer_get_layer(popup_window->text));
       // create action bar
       popup_window->action = action_bar_layer_create();
       action_bar_layer_set_context(popup_window->action, popup_window);
-      action_bar_layer_set_click_config_provider(popup_window->action,
-        click_config_provider);
-      action_bar_layer_set_icon(popup_window->action, BUTTON_ID_UP,
-        popup_window->snooze_icon);
-      action_bar_layer_set_icon(popup_window->action, BUTTON_ID_DOWN,
-        popup_window->stop_icon);
+      action_bar_layer_set_click_config_provider(popup_window->action, click_config_provider);
+      action_bar_layer_set_icon(popup_window->action, BUTTON_ID_UP, popup_window->snooze_icon);
+      action_bar_layer_set_icon(popup_window->action, BUTTON_ID_DOWN, popup_window->stop_icon);
       return popup_window;
     }
   }
@@ -323,11 +319,13 @@ void popup_window_destroy(PopupWindow *popup_window) {
     gbitmap_destroy(popup_window->snooze_icon);
     gbitmap_destroy(popup_window->stop_icon);
 #ifdef PBL_SDK_3
-    if (popup_window->draw_sequence != NULL)
+    if (popup_window->draw_sequence != NULL) {
       gdraw_command_sequence_destroy(popup_window->draw_sequence);
+    }
 #else
-    if (popup_window->image != NULL)
+    if (popup_window->image != NULL) {
       gbitmap_destroy(popup_window->image);
+    }
 #endif
 
     free(popup_window);
@@ -375,14 +373,14 @@ bool popup_window_get_topmost_window(PopupWindow *popup_window) {
  * it will auto-pop when a refresh event is called after this time
  */
 
-void popup_window_set_auto_close_duration(PopupWindow *popup_window,
-  int64_t duration) {
-  popup_window->set_time = (int64_t)time(NULL) * 1000 +
-    (int64_t)time_ms(NULL, NULL);
-  if (duration > 0)
+void popup_window_set_auto_close_duration(PopupWindow *popup_window, int64_t duration) {
+  popup_window->set_time = countdown_timer_get_epoch_ms();
+  if (duration > 0) {
     popup_window->close_time = popup_window->set_time + duration;
-  else
+  }
+  else {
     popup_window->close_time = 0;
+  }
 }
 
 
@@ -391,8 +389,7 @@ void popup_window_set_auto_close_duration(PopupWindow *popup_window,
  * sets the CountdownTimer associated with this PopupWindow
  */
 
-void popup_window_set_countdown_timer(PopupWindow *popup_window,
-                    CountdownTimer *countdown_timer) {
+void popup_window_set_countdown_timer(PopupWindow *popup_window, CountdownTimer *countdown_timer) {
   popup_window->countdown_timer = countdown_timer;
 }
 
@@ -403,29 +400,26 @@ void popup_window_set_countdown_timer(PopupWindow *popup_window,
  */
 
 void popup_window_refresh(PopupWindow *popup_window) {
-  int64_t current_time = (int64_t)time(NULL) * 1000 +
-    (int64_t)time_ms(NULL, NULL);
+  int64_t current_time = countdown_timer_get_epoch_ms();
   // check if it should auto-pop
-  if (popup_window->close_time != 0 &&
-    popup_window->close_time <= current_time) {
+  if (popup_window->close_time != 0 && popup_window->close_time <= current_time) {
     popup_window_pop(popup_window, true);
   }
 
   // step animation
 #ifdef PBL_SDK_3
   if (popup_window->endless) {
-    popup_window->draw_frame =
-      gdraw_command_sequence_get_frame_by_index(
-        popup_window->draw_sequence, popup_window->frame_index);
+    popup_window->draw_frame = gdraw_command_sequence_get_frame_by_index(
+      popup_window->draw_sequence, popup_window->frame_index);
   }
   else {
-    popup_window->draw_frame =
-      gdraw_command_sequence_get_frame_by_elapsed(popup_window->draw_sequence,
-        current_time - popup_window->set_time);
+    popup_window->draw_frame = gdraw_command_sequence_get_frame_by_elapsed(
+      popup_window->draw_sequence, current_time - popup_window->set_time);
   }
   popup_window->frame_index++;
-  if (popup_window->frame_index >= popup_window->frame_count)
+  if (popup_window->frame_index >= popup_window->frame_count) {
     popup_window->frame_index = 0;
+  }
 #endif
   // refresh
   layer_mark_dirty(popup_window->layer);
@@ -445,22 +439,20 @@ void popup_window_refresh(PopupWindow *popup_window) {
  * and resizes the layer containing it so that it is centered
  */
 
-void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id,
-  bool endless) {
+void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id, bool endless) {
   // temp variable
   GDrawCommandSequence *tmp_sequence = popup_window->draw_sequence;
   // load PDC
-  popup_window->draw_sequence =
-    gdraw_command_sequence_create_with_resource(resource_id);
-  popup_window->frame_count =
-    gdraw_command_sequence_get_num_frames(popup_window->draw_sequence);
+  popup_window->draw_sequence = gdraw_command_sequence_create_with_resource(resource_id);
+  popup_window->frame_count = gdraw_command_sequence_get_num_frames(popup_window->draw_sequence);
   popup_window->frame_index = 0;
   popup_window->endless = endless;
   // destroy old pointer
-  if (tmp_sequence != NULL)
+  if (tmp_sequence != NULL) {
     gdraw_command_sequence_destroy(tmp_sequence);
+  }
   // center layer for PDC
-  layer_center_in_window(popup_window);
+  layers_center_in_window(popup_window);
 }
 
 
@@ -471,8 +463,7 @@ void popup_window_set_pdc(PopupWindow *popup_window, uint32_t resource_id,
  */
 
 int64_t popup_window_get_pdc_duration(PopupWindow *popup_window) {
-  return gdraw_command_sequence_get_total_duration(
-    popup_window->draw_sequence);
+  return gdraw_command_sequence_get_total_duration(popup_window->draw_sequence);
 }
 
 #else
@@ -484,12 +475,13 @@ int64_t popup_window_get_pdc_duration(PopupWindow *popup_window) {
 
 void popup_window_set_image(PopupWindow *popup_window, uint32_t resource_id) {
   // check if old image and destroy
-  if (popup_window->image != NULL)
+  if (popup_window->image != NULL) {
     gbitmap_destroy(popup_window->image);
+  }
   // load image
   popup_window->image = gbitmap_create_with_resource(resource_id);
   // center layer for image
-  layer_center_in_window(popup_window);
+  layers_center_in_window(popup_window);
 }
 
 #endif
@@ -526,20 +518,10 @@ void popup_window_set_highlight_color(PopupWindow *popup_window, GColor color) {
 
 void popup_window_add_action_bar(PopupWindow *popup_window) {
   if (!popup_window->action_visible) {
-    action_bar_layer_add_to_window(popup_window->action,
-      popup_window->window);
+    action_bar_layer_add_to_window(popup_window->action, popup_window->window);
     popup_window->action_visible = true;
     // re-center layers
-    layer_center_in_window(popup_window);
-    GRect text_frame =
-      layer_get_frame(text_layer_get_layer(popup_window->text));
-    text_frame.size.w = layer_get_bounds(
-      window_get_root_layer(popup_window->window)).size.w -
-      ACTION_BAR_WIDTH;
-    printf("Width: %d", text_frame.size.w);
-    layer_set_frame(text_layer_get_layer(popup_window->text) , text_frame);
-    text_frame.origin.x = text_frame.origin.y = 0;
-    layer_set_bounds(text_layer_get_layer(popup_window->text) , text_frame);
+    layers_center_in_window(popup_window);
   }
 }
 
@@ -552,17 +534,10 @@ void popup_window_add_action_bar(PopupWindow *popup_window) {
  */
 
 void popup_window_remove_action_bar(PopupWindow *popup_window) {
-  if (popup_window->action_visible) {
-    action_bar_layer_remove_from_window(popup_window->action);
-    popup_window->action_visible = false;
-    // re-center layers
-    layer_center_in_window(popup_window);
-    GRect text_frame =
-      layer_get_frame(text_layer_get_layer(popup_window->text));
-    text_frame.size.w = layer_get_bounds(
-      window_get_root_layer(popup_window->window)).size.w;
-    layer_set_frame(text_layer_get_layer(popup_window->text), text_frame);
-  }
+  action_bar_layer_remove_from_window(popup_window->action);
+  popup_window->action_visible = false;
+  // re-center layers
+  layers_center_in_window(popup_window);
 }
 
 
@@ -572,7 +547,7 @@ void popup_window_remove_action_bar(PopupWindow *popup_window) {
  */
 
 void popup_window_set_action_bar_callbacks(PopupWindow *popup_window,
-  PopupWindowCallbacks callbacks) {
+                                           PopupWindowCallbacks callbacks) {
   popup_window->callbacks = callbacks;
 }
 

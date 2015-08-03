@@ -47,8 +47,7 @@
  * called when the edit button is pressed
  */
 
-typedef void (*DetailWindowEdit)(CountdownTimer *countdown_timer,
-                  void *context);
+typedef void (*DetailWindowEdit)(CountdownTimer *countdown_timer, void *context);
 
 
 
@@ -58,8 +57,7 @@ typedef void (*DetailWindowEdit)(CountdownTimer *countdown_timer,
  * called when the play/pause button is pressed
  */
 
-typedef void (*DetailWindowPlayPause)(CountdownTimer *countdown_timer,
-                  void *context);
+typedef void (*DetailWindowPlayPause)(CountdownTimer *countdown_timer, void *context);
 
 
 
@@ -69,8 +67,7 @@ typedef void (*DetailWindowPlayPause)(CountdownTimer *countdown_timer,
  * called when the delete buttons is pressed
  */
 
-typedef void (*DetailWindowDelete)(CountdownTimer *countdown_timer,
-                  void *context);
+typedef void (*DetailWindowDelete)(CountdownTimer *countdown_timer, void *context);
 
 
 
@@ -116,8 +113,7 @@ typedef struct DetailWindow DetailWindow;
  *  returns: a pointer to a new DetailWindow structure
  */
 
-DetailWindow *detail_window_create(
-          DetailWindowCallbacks detail_window_callbacks);
+DetailWindow *detail_window_create(DetailWindowCallbacks detail_window_callbacks);
 
 
 
@@ -183,7 +179,7 @@ bool detail_window_get_topmost_window(DetailWindow *detail_window);
  */
 
 void detail_window_set_countdown_timer(DetailWindow *detail_window,
-                    CountdownTimer *countdown_timer);
+                                       CountdownTimer *countdown_timer);
 
 
 
@@ -220,8 +216,7 @@ void detail_window_deep_refresh(DetailWindow *detail_window);
  *  color: the GColor to set the highlight to
  */
 
-void detail_window_set_highlight_color(DetailWindow *detail_window,
-                    GColor color);
+void detail_window_set_highlight_color(DetailWindow *detail_window, GColor color);
 
 
 

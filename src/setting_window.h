@@ -86,8 +86,7 @@ typedef struct SettingWindow SettingWindow;
  *  returns: a pointer to a new SettingWindow structure
  */
 
-SettingWindow *setting_window_create(
-          SettingWindowCallbacks setting_window_callbacks);
+SettingWindow *setting_window_create(SettingWindowCallbacks setting_window_callbacks);
 
 
 
@@ -152,8 +151,7 @@ bool setting_window_get_topmost_window(SettingWindow *setting_window);
  *  countdown_timer: the CountdownTimer being assigned the window
  */
 
-void setting_window_set_timer(SettingWindow *setting_window,
-                  CountdownTimer *countdown_timer);
+void setting_window_set_timer(SettingWindow *setting_window, CountdownTimer *countdown_timer);
 
 
 
@@ -179,5 +177,4 @@ CountdownTimer *setting_window_get_timer(SettingWindow *setting_window);
  *  color: the GColor to set the highlight to
  */
 
-void setting_window_set_highlight_color(SettingWindow *setting_window,
-                    GColor color);
+void setting_window_set_highlight_color(SettingWindow *setting_window, GColor color);

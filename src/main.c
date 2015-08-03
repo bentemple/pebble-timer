@@ -27,11 +27,14 @@
 #define HIGHLIGHT_COLOR GColorWhite
 #endif
 #define COUNTDOWN_TIMERS_MAX 8
-#define COUNTDOWN_TIMER_SNOOZE_DELAY 60000
-#define TIMER_MIN_LENGTH 5000
-#define TIMELINE_MIN_LENGTH 900000
-#define INACTIVITY_THRESHOLD 900000 //< length of time before refresh throttling
-#define INACTIVE_REFRESH_DELAY 1000 //< ms between frames after throttling
+#define COUNTDOWN_TIMER_SNOOZE_DELAY 60000 // milliseconds
+#define TIMER_MIN_LENGTH 5000 // milliseconds
+#define TIMELINE_MIN_LENGTH 900000 // milliseconds
+#define INACTIVITY_THRESHOLD 900000 // length of time before refresh throttling in milliseconds
+#define INACTIVE_REFRESH_DELAY 1000 // ms between frames after throttling
+#define PIN_ACTION_CODE_TRUNCATION_LEVEL 100 // both the pin id and action code have to be stored
+                                             // in the pins action code
+#define PIN_LAUNCH_ARGS_OPEN 10 // when opened from pin, action code to open timer in detail view
 
 
 /*******************************************************************************
@@ -63,8 +66,7 @@ static void app_timer_callback(void *data) {
   s_app_timer = NULL;
 
   // check for expired timers
-  CountdownTimer *countdown_timer =
-    countdown_timer_check_ended(s_countdown_timers,
+  CountdownTimer *countdown_timer = countdown_timer_check_ended(s_countdown_timers,
     s_countdown_timers_count);
   if (countdown_timer != NULL) {
     // deep refresh the DetailWindow in case it was that timer
@@ -74,9 +76,7 @@ static void app_timer_callback(void *data) {
     popup_window_set_title(s_popup_window, "Time's Up!");
     popup_window_set_highlight_color(s_popup_window, HIGHLIGHT_COLOR);
 #ifdef PBL_SDK_3
-    popup_window_set_pdc(s_popup_window,
-      RESOURCE_ID_ICON_ALARM_CLOCK, true);
-    int64_t pdc_duration = popup_window_get_pdc_duration(s_popup_window);
+    popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_ALARM_CLOCK, true);
     popup_window_set_auto_close_duration(s_popup_window, 15000);
 #else
     popup_window_set_image(s_popup_window, RESOURCE_ID_IMAGE_ALARM);
@@ -111,18 +111,21 @@ static void app_timer_callback(void *data) {
 
   // schedule next refresh
   uint16_t refresh_rate = 35;
-  if (detail_top && !detail_window_get_update_needed(s_detail_window)){
+  if (detail_top && !detail_window_get_update_needed(s_detail_window)) {
     refresh_rate = 1000;
   }
-  else if (menu_top)
+  else if (menu_top) {
     refresh_rate = 1000;
-  else if (popup_top)
+  }
+  else if (popup_top) {
     refresh_rate = 20;
-  if (refresh_rate == 0) return;
+  }
+  if (refresh_rate == 0) {
+    return;
+  }
   // cap refresh rate if inactive
   if (inactivity_duration > INACTIVITY_THRESHOLD) {
-    refresh_rate = (refresh_rate > INACTIVE_REFRESH_DELAY) ?
-      refresh_rate : INACTIVE_REFRESH_DELAY;
+    refresh_rate = (refresh_rate > INACTIVE_REFRESH_DELAY) ? refresh_rate : INACTIVE_REFRESH_DELAY;
     detail_window_set_power_saver_mode(s_detail_window, true);
   }
   else {
@@ -138,10 +141,8 @@ static void app_timer_callback(void *data) {
  * snoozes the vibrating timer for one minute
  */
 
-static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer,
-  void *context) {
-  countdown_timer_update(countdown_timer,
-    COUNTDOWN_TIMER_SNOOZE_DELAY, false);
+static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer, void *context) {
+  countdown_timer_update(countdown_timer, COUNTDOWN_TIMER_SNOOZE_DELAY, false);
   countdown_timer_start(countdown_timer);
   popup_window_pop(s_popup_window, true);
   // show detail if not on top
@@ -149,6 +150,7 @@ static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer,
     detail_window_set_countdown_timer(s_detail_window, countdown_timer);
     detail_window_push(s_detail_window, false);
   }
+  detail_window_deep_refresh(s_detail_window);
   // log activity
   s_last_activity = countdown_timer_get_epoch_ms();
 }
@@ -181,7 +183,9 @@ static void setting_window_complete_callback(int64_t duration, void *context){
   // check if long enough
   if (duration < TIMER_MIN_LENGTH) {
     setting_window_pop(setting_window, true);
-    if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
+    if (s_app_timer != NULL) {
+      app_timer_reschedule(s_app_timer, 10);
+    }
     return;
   }
   // check if new timer or editing
@@ -192,14 +196,15 @@ static void setting_window_complete_callback(int64_t duration, void *context){
     countdown_timer_start(countdown_timer);
     // update visuals
     menu_window_reload_data(s_menu_window);
+    menu_window_refresh(s_menu_window);
     detail_window_set_countdown_timer(s_detail_window, countdown_timer);
     detail_window_deep_refresh(s_detail_window);
     detail_window_push(s_detail_window, true);
     setting_window_pop(setting_window, false);
     // delete the Timeline pin
-    if (countdown_timer_get_duration(countdown_timer) >=
-      TIMELINE_MIN_LENGTH)
+    if (countdown_timer_get_duration(countdown_timer) >= TIMELINE_MIN_LENGTH) {
       phone_send_pin(countdown_timer);
+    }
   }
   else {
     countdown_timer_update(countdown_timer, duration, true);
@@ -208,15 +213,16 @@ static void setting_window_complete_callback(int64_t duration, void *context){
     setting_window_pop(setting_window, true);
     // deal with timeline
     phone_delete_pin(countdown_timer);
-    if (countdown_timer_get_duration(countdown_timer) >=
-      TIMELINE_MIN_LENGTH) {
+    if (countdown_timer_get_duration(countdown_timer) >= TIMELINE_MIN_LENGTH) {
       countdown_timer_rand_id(countdown_timer);
       phone_send_pin(countdown_timer);
     }
   }
 
   // refresh now
-  if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
+  if (s_app_timer != NULL) {
+    app_timer_reschedule(s_app_timer, 10);
+  }
 
   // log activity
   s_last_activity = countdown_timer_get_epoch_ms();
@@ -229,8 +235,7 @@ static void setting_window_complete_callback(int64_t duration, void *context){
  * edit the timer currently in the detail view
  */
 
-static void detail_window_edit_timer_callback(CountdownTimer *countdown_timer,
-                  void *context) {
+static void detail_window_edit_timer_callback(CountdownTimer *countdown_timer, void *context) {
   setting_window_set_timer(s_setting_window, countdown_timer);
   setting_window_push(s_setting_window, true);
 
@@ -248,16 +253,15 @@ static void detail_window_edit_timer_callback(CountdownTimer *countdown_timer,
 static void detail_window_playpause_timer_callback(CountdownTimer *countdown_timer, void *context) {
   if (countdown_timer_get_paused(countdown_timer)) {
     // push the Timeline pin
-    if (countdown_timer_get_duration(countdown_timer) >=
-      TIMELINE_MIN_LENGTH)
+    if (countdown_timer_get_duration(countdown_timer) >= TIMELINE_MIN_LENGTH) {
       phone_send_pin(countdown_timer);
+    }
     // start the timer
     countdown_timer_start(countdown_timer);
   }
   else {
     // delete the Timeline pin
-    if (countdown_timer_get_duration(countdown_timer) >=
-      TIMELINE_MIN_LENGTH) {
+    if (countdown_timer_get_duration(countdown_timer) >= TIMELINE_MIN_LENGTH) {
       phone_delete_pin(countdown_timer);
       countdown_timer_rand_id(countdown_timer);
     }
@@ -278,18 +282,17 @@ static void detail_window_playpause_timer_callback(CountdownTimer *countdown_tim
  * delete the timer currently in the detail view
  */
 
-static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
-                  void *context) {
+static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer, void *context) {
   // delete the Timeline pin
-  if (countdown_timer_get_duration(countdown_timer) >= TIMELINE_MIN_LENGTH)
+  if (countdown_timer_get_duration(countdown_timer) >= TIMELINE_MIN_LENGTH) {
     phone_delete_pin(countdown_timer);
+  }
 
   // delete the timer
-  int16_t timer_index = countdown_timer_list_get_timer_index(
-    s_countdown_timers, s_countdown_timers_count, countdown_timer);
+  int16_t timer_index = countdown_timer_list_get_timer_index(s_countdown_timers,
+    s_countdown_timers_count, countdown_timer);
   countdown_timer_destroy(countdown_timer);
-  countdown_timer_list_remove(s_countdown_timers, &s_countdown_timers_count,
-     timer_index);
+  countdown_timer_list_remove(s_countdown_timers, &s_countdown_timers_count, timer_index);
   // reload MenuWindow data
   menu_window_reload_data(s_menu_window);
   menu_window_refresh(s_menu_window);
@@ -309,6 +312,14 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
 #endif
   popup_window_remove_action_bar(s_popup_window);
   popup_window_push(s_popup_window, true);
+  popup_window_refresh(s_popup_window);
+
+  // refresh immediately
+  if (s_app_timer) {
+    app_timer_reschedule(s_app_timer, 10);
+  } else {
+    s_app_timer = app_timer_register(10, app_timer_callback, NULL);
+  }
 
   // log activity
   s_last_activity = countdown_timer_get_epoch_ms();
@@ -321,13 +332,12 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
  * gets a pointer to a timer at a specific index
  */
 
-static CountdownTimer *menu_window_get_timer_callback(uint8_t index,
-                            void *context) {
-  if (index < s_countdown_timers_count)
+static CountdownTimer *menu_window_get_timer_callback(uint8_t index, void *context) {
+  if (index < s_countdown_timers_count) {
     return s_countdown_timers[index];
+  }
   // error handling
-  APP_LOG(APP_LOG_LEVEL_ERROR,
-    "Attempted to access timer outside array bounds");
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Attempted to access timer outside array bounds");
   return NULL;
 }
 
@@ -356,12 +366,13 @@ static void menu_window_click_callback(uint8_t index, void *context) {
   }
   else {
     // show timer in detail window
-    detail_window_set_countdown_timer(s_detail_window,
-                    s_countdown_timers[index - 1]);
+    detail_window_set_countdown_timer(s_detail_window, s_countdown_timers[index - 1]);
     detail_window_deep_refresh(s_detail_window);
     detail_window_push(s_detail_window, true);
     // start timer refreshing quickly
-    if (s_app_timer != NULL) app_timer_reschedule(s_app_timer, 10);
+    if (s_app_timer != NULL) {
+      app_timer_reschedule(s_app_timer, 10);
+    }
   }
 
   // log activity
@@ -382,9 +393,10 @@ static void initialize(void) {
   // connect to phone
   phone_connect();
   // load the CountdownTimer data
-  if (persist_exists(COUNTDOWN_TIMER_PERSIST_KEY))
+  if (persist_exists(COUNTDOWN_TIMER_PERSIST_KEY)) {
     countdown_timer_list_load(s_countdown_timers, &s_countdown_timers_count,
       COUNTDOWN_TIMER_PERSIST_KEY);
+  }
   // cancel wakeup
   wakeup_cancel_all();
 
@@ -424,15 +436,13 @@ static void initialize(void) {
 
   // check wakeup in case launched by pin
   if (launch_reason() == APP_LAUNCH_TIMELINE_ACTION) {
-    uint32_t args = launch_get_args() % 100;
-    if (args == 10) {
-      CountdownTimer *countdown_timer =
-        countdown_timer_list_get_timer_by_id(s_countdown_timers,
-        s_countdown_timers_count, launch_get_args() / 100);
+    uint32_t args = launch_get_args() % PIN_ACTION_CODE_TRUNCATION_LEVEL;
+    if (args == PIN_LAUNCH_ARGS_OPEN) {
+      CountdownTimer *countdown_timer = countdown_timer_list_get_timer_by_id(s_countdown_timers,
+        s_countdown_timers_count, launch_get_args() / PIN_ACTION_CODE_TRUNCATION_LEVEL);
       if (countdown_timer != NULL) {
         // show timer in detail window
-        detail_window_set_countdown_timer(s_detail_window,
-                        countdown_timer);
+        detail_window_set_countdown_timer(s_detail_window, countdown_timer);
         detail_window_deep_refresh(s_detail_window);
         detail_window_push(s_detail_window, true);
       }
@@ -461,7 +471,9 @@ static void initialize(void) {
 
 static void deinitialize(void) {
   // cancel the timer if it is still registered
-  if (s_app_timer != NULL) app_timer_cancel(s_app_timer);
+  if (s_app_timer != NULL) {
+    app_timer_cancel(s_app_timer);
+  }
   // disconnect from phone
   phone_disconnect();
 
@@ -470,12 +482,10 @@ static void deinitialize(void) {
   countdown_timer_list_save(s_countdown_timers, s_countdown_timers_count,
     COUNTDOWN_TIMER_PERSIST_KEY);
   // schedule the wakeup
-  CountdownTimer *countdown_timer =
-    countdown_timer_list_get_closest_timer(s_countdown_timers,
+  CountdownTimer *countdown_timer = countdown_timer_list_get_closest_timer(s_countdown_timers,
     s_countdown_timers_count);
   if (countdown_timer != NULL) {
-    time_t timestamp = time(NULL) +
-      countdown_timer_get_current_time(countdown_timer) / 1000;
+    time_t timestamp = time(NULL) + countdown_timer_get_current_time(countdown_timer) / 1000;
     // add one second to ensure it opens straight to the PopupWindow
     wakeup_schedule(timestamp + 1, 0, true);
   }
@@ -485,8 +495,7 @@ static void deinitialize(void) {
   setting_window_destroy(s_setting_window);
   detail_window_destroy(s_detail_window);
   menu_window_destroy(s_menu_window);
-  countdown_timer_list_destroy_all(s_countdown_timers,
-                &s_countdown_timers_count);
+  countdown_timer_list_destroy_all(s_countdown_timers, &s_countdown_timers_count);
 }
 
 

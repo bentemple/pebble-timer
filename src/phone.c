@@ -24,16 +24,14 @@ void phone_send_pin(CountdownTimer *countdown_timer) {
   app_message_outbox_begin(&iter);
   // write data
   dict_write_int32(iter, KEY_UNIQUEID, countdown_timer_get_id(countdown_timer));
-  dict_write_int32(iter, KEY_DURATION,
-    countdown_timer_get_current_time(countdown_timer) / 1000);
-  dict_write_int32(iter, KEY_TOTAL_TIME,
-    countdown_timer_get_duration(countdown_timer) / 1000);
+  dict_write_int32(iter, KEY_DURATION, countdown_timer_get_current_time(countdown_timer) / 1000);
+  dict_write_int32(iter, KEY_TOTAL_TIME, countdown_timer_get_duration(countdown_timer) / 1000);
   dict_write_end(iter);
   // send
   app_message_outbox_send();
 }
 // delete a pin
-void phone_delete_pin(CountdownTimer *countdown_timer){
+void phone_delete_pin(CountdownTimer *countdown_timer) {
   // begin iterator
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
@@ -49,26 +47,6 @@ void phone_delete_pin(CountdownTimer *countdown_timer){
 
 
 // ********** Callbacks ********** //
-// sent and received
-static void inbox_received_callback(DictionaryIterator *iterator,
-  void *context) {
-  // get the first pair
-  Tuple *t = dict_read_first(iterator);
-
-  // process all pairs present
-  while(t != NULL) {
-    // process this pair's key
-    switch (t->key) {
-      case KEY_DURATION:
-        APP_LOG(APP_LOG_LEVEL_INFO, "KEY_DURATION received with value %d",
-          (int)t->value->int32);
-        break;
-    }
-
-    // get next pair, if any
-    t = dict_read_next(iterator);
-  }
-}
 static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
 }
@@ -76,10 +54,9 @@ static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
 }
-static void outbox_failed_callback(DictionaryIterator *iterator,
-  AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed: %d",
-    (int)(APP_MSG_NOT_CONNECTED == (int)reason));
+static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason,
+                                   void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed: %d", (APP_MSG_NOT_CONNECTED == (int)reason));
 }
 
 
@@ -88,13 +65,11 @@ static void outbox_failed_callback(DictionaryIterator *iterator,
 // start phone connection
 void phone_connect(void){
   // register callbacks
-  app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
   app_message_register_outbox_failed(outbox_failed_callback);
   app_message_register_outbox_sent(outbox_sent_callback);
   // Open AppMessage
-  int res = app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM,
-    APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
+  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
 }
 
 // stop phone connection
