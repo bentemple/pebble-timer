@@ -247,61 +247,71 @@ static void window_unload(Window *window) {
 
 PopupWindow *popup_window_create(void) {
   PopupWindow *popup_window = (PopupWindow*)malloc(sizeof(PopupWindow));
-  if (popup_window != NULL) {
-    popup_window->window = window_create();
-    window_set_window_handlers(popup_window->window, (WindowHandlers) {
-      .unload = window_unload,
-    });
-    if (popup_window->window != NULL) {
-      // load some resources
-      popup_window->stop_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_DISMISS);
-      popup_window->snooze_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SNOOZE);
 
-      // zero some values
-      popup_window->countdown_timer = NULL;
-      popup_window->action_visible = false;
-#ifdef PBL_SDK_3
-      popup_window->draw_sequence = NULL;
-      popup_window->draw_frame = NULL;
-      popup_window->frame_count = 0;
-      popup_window->frame_index = 0;
-#else
-      popup_window->image = NULL;
-#endif
-      // get window parameters
-      Layer *root = window_get_root_layer(popup_window->window);
-      GRect bounds = layer_get_frame(root);
-      // create layer
-      // IMPORTANT: must be created with data for the PopupWindow pointer
-      // so that it can be accessed in the layer_update_proc callback
-      popup_window->layer = layer_create_with_data(bounds, sizeof(PopupWindow*));
-      PopupWindow **layer_data = (PopupWindow**)layer_get_data(popup_window->layer);
-      (*layer_data) = popup_window;
-      layer_set_clips(popup_window->layer, false);
-      layer_set_update_proc(popup_window->layer, layer_update_proc);
-      layer_add_child(root, popup_window->layer);
-      // text
-#ifdef PBL_SDK_3
-      popup_window->text = text_layer_create(GRect(0, 125, bounds.size.w, 36));
-#else
-      popup_window->text = text_layer_create(GRect(0, 110, bounds.size.w, 36));
-#endif
-      text_layer_set_font(popup_window->text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-      text_layer_set_text_alignment(popup_window->text, GTextAlignmentCenter);
-      text_layer_set_background_color(popup_window->text, GColorClear);
-      layer_add_child(root, text_layer_get_layer(popup_window->text));
-      // create action bar
-      popup_window->action = action_bar_layer_create();
-      action_bar_layer_set_context(popup_window->action, popup_window);
-      action_bar_layer_set_click_config_provider(popup_window->action, click_config_provider);
-      action_bar_layer_set_icon(popup_window->action, BUTTON_ID_UP, popup_window->snooze_icon);
-      action_bar_layer_set_icon(popup_window->action, BUTTON_ID_DOWN, popup_window->stop_icon);
-      return popup_window;
-    }
-  }
   // error handling
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to create PopupWindow");
-  return NULL;
+  if (popup_window == NULL) {
+    // error handling
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to create PopupWindow");
+    return NULL;
+  }
+
+  // create window
+  popup_window->window = window_create();
+  // error handling
+  if (popup_window->window == NULL) {
+    free(popup_window);
+    // error handling
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to create window for PopupWindow");
+    return NULL;
+  }
+
+  window_set_window_handlers(popup_window->window, (WindowHandlers) {
+    .unload = window_unload,
+  });
+  // load some resources
+  popup_window->stop_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_DISMISS);
+  popup_window->snooze_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SNOOZE);
+
+  // zero some values
+  popup_window->countdown_timer = NULL;
+  popup_window->action_visible = false;
+#ifdef PBL_SDK_3
+  popup_window->draw_sequence = NULL;
+  popup_window->draw_frame = NULL;
+  popup_window->frame_count = 0;
+  popup_window->frame_index = 0;
+#else
+  popup_window->image = NULL;
+#endif
+  // get window parameters
+  Layer *root = window_get_root_layer(popup_window->window);
+  GRect bounds = layer_get_frame(root);
+  // create layer
+  // IMPORTANT: must be created with data for the PopupWindow pointer
+  // so that it can be accessed in the layer_update_proc callback
+  popup_window->layer = layer_create_with_data(bounds, sizeof(PopupWindow*));
+  PopupWindow **layer_data = (PopupWindow**)layer_get_data(popup_window->layer);
+  (*layer_data) = popup_window;
+  layer_set_clips(popup_window->layer, false);
+  layer_set_update_proc(popup_window->layer, layer_update_proc);
+  layer_add_child(root, popup_window->layer);
+  // text
+#ifdef PBL_SDK_3
+  popup_window->text = text_layer_create(GRect(0, 125, bounds.size.w, 36));
+#else
+  popup_window->text = text_layer_create(GRect(0, 110, bounds.size.w, 36));
+#endif
+  text_layer_set_font(popup_window->text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_text_alignment(popup_window->text, GTextAlignmentCenter);
+  text_layer_set_background_color(popup_window->text, GColorClear);
+  layer_add_child(root, text_layer_get_layer(popup_window->text));
+  // create action bar
+  popup_window->action = action_bar_layer_create();
+  action_bar_layer_set_context(popup_window->action, popup_window);
+  action_bar_layer_set_click_config_provider(popup_window->action, click_config_provider);
+  action_bar_layer_set_icon(popup_window->action, BUTTON_ID_UP, popup_window->snooze_icon);
+  action_bar_layer_set_icon(popup_window->action, BUTTON_ID_DOWN, popup_window->stop_icon);
+  return popup_window;
 }
 
 

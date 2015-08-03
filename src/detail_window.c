@@ -367,6 +367,7 @@ DetailWindow *detail_window_create(DetailWindowCallbacks detail_window_callbacks
   detail_window->window = window_create();
   // error handling
   if (detail_window->window == NULL) {
+    free(detail_window);
     // error handling
     APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to create window for DetailWindow");
     return NULL;

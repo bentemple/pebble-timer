@@ -98,14 +98,14 @@ int64_t countdown_timer_get_epoch_ms(void) {
  * creates a CountdownTimer and sets its values to defaults
  */
 
-CountdownTimer *countdown_timer_create(int64_t duration) {
+CountdownTimer *countdown_timer_create(int64_t duration, int32_t *current_id_max) {
   CountdownTimer *countdown_timer = (CountdownTimer*)malloc(sizeof(CountdownTimer));
   if (countdown_timer != NULL) {
     (*countdown_timer) = (CountdownTimer) {
       .duration_ms = duration,
       .paused = true,
     };
-    countdown_timer_rand_id(countdown_timer);
+    countdown_timer_rand_id(countdown_timer, current_id_max);
     return countdown_timer;
   }
   // error handling
@@ -149,12 +149,12 @@ void countdown_timer_start(CountdownTimer *countdown_timer) {
  * epoch when starting, and subtracting it when stopping
  */
 
-void countdown_timer_stop(CountdownTimer *countdown_timer) {
+void countdown_timer_stop(CountdownTimer *countdown_timer, int32_t *current_id_max) {
   if (!countdown_timer->paused) {
     countdown_timer->start_ms -= countdown_timer_get_epoch_ms();
     countdown_timer->paused = true;
     // give a new ID for pins
-    countdown_timer_rand_id(countdown_timer);
+    countdown_timer_rand_id(countdown_timer, current_id_max);
   }
 }
 
@@ -411,12 +411,12 @@ int64_t countdown_timer_get_current_time(CountdownTimer *countdown_timer) {
  * gives the CountdownTimer a random new id
  */
 
-void countdown_timer_rand_id(CountdownTimer *countdown_timer) {
+void countdown_timer_rand_id(CountdownTimer *countdown_timer, int32_t *current_id_max) {
   // set the id equal to the timers pointer
   // this is guarantied to be unique and since only the last 16 bits of the pointer are used
   // in pebble's memory addresses, the value is also guarantied to be small enough
   // for my other functions (embedding the pin actions into the id for the pin)
-  countdown_timer->id = (intptr_t)countdown_timer;
+  countdown_timer->id = (*current_id_max)++;
 }
 
 

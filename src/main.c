@@ -19,6 +19,7 @@
 
  // constants
 #define COUNTDOWN_TIMER_PERSIST_KEY 72445846
+#define COUNTDOWN_TIMER_ID_PERSIST_KEY 3568356
 #define PERSIST_VERSION 1
 #define PERSIST_VERSION_KEY 46134672
 #ifdef PBL_COLOR
@@ -47,6 +48,7 @@ static SettingWindow *s_setting_window = NULL;
 static PopupWindow *s_popup_window = NULL;
 static uint8_t s_countdown_timers_count = 0;
 static CountdownTimer *s_countdown_timers[COUNTDOWN_TIMERS_MAX] = {};
+static int32_t s_countdown_timer_id_max = 0;
 static AppTimer *s_app_timer = NULL;
 static int64_t s_last_activity = 0;
 
@@ -190,7 +192,7 @@ static void setting_window_complete_callback(int64_t duration, void *context){
   }
   // check if new timer or editing
   if (countdown_timer == NULL) {
-    countdown_timer = countdown_timer_create(duration);
+    countdown_timer = countdown_timer_create(duration, &s_countdown_timer_id_max);
     countdown_timer_list_add(s_countdown_timers, COUNTDOWN_TIMERS_MAX,
       &s_countdown_timers_count, countdown_timer);
     countdown_timer_start(countdown_timer);
@@ -214,7 +216,7 @@ static void setting_window_complete_callback(int64_t duration, void *context){
     // deal with timeline
     phone_delete_pin(countdown_timer);
     if (countdown_timer_get_duration(countdown_timer) >= TIMELINE_MIN_LENGTH) {
-      countdown_timer_rand_id(countdown_timer);
+      countdown_timer_rand_id(countdown_timer, &s_countdown_timer_id_max);
       phone_send_pin(countdown_timer);
     }
   }
@@ -263,10 +265,10 @@ static void detail_window_playpause_timer_callback(CountdownTimer *countdown_tim
     // delete the Timeline pin
     if (countdown_timer_get_duration(countdown_timer) >= TIMELINE_MIN_LENGTH) {
       phone_delete_pin(countdown_timer);
-      countdown_timer_rand_id(countdown_timer);
+      countdown_timer_rand_id(countdown_timer, &s_countdown_timer_id_max);
     }
     // stop the timer
-    countdown_timer_stop(countdown_timer);
+    countdown_timer_stop(countdown_timer, &s_countdown_timer_id_max);
   }
   // refresh DetailWindow
   detail_window_deep_refresh(s_detail_window);
@@ -397,6 +399,9 @@ static void initialize(void) {
     countdown_timer_list_load(s_countdown_timers, &s_countdown_timers_count,
       COUNTDOWN_TIMER_PERSIST_KEY);
   }
+  if (persist_exists(COUNTDOWN_TIMER_ID_PERSIST_KEY)) {
+    s_countdown_timer_id_max = persist_read_int(COUNTDOWN_TIMER_ID_PERSIST_KEY);
+  }
   // cancel wakeup
   wakeup_cancel_all();
 
@@ -479,6 +484,7 @@ static void deinitialize(void) {
 
   // persist state
   persist_write_int(PERSIST_VERSION_KEY, PERSIST_VERSION);
+  persist_write_int(COUNTDOWN_TIMER_ID_PERSIST_KEY, s_countdown_timer_id_max);
   countdown_timer_list_save(s_countdown_timers, s_countdown_timers_count,
     COUNTDOWN_TIMER_PERSIST_KEY);
   // schedule the wakeup

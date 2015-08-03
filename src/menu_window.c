@@ -232,7 +232,6 @@ void menu_window_destroy(MenuWindow *menu_window) {
     gbitmap_destroy(menu_window->play_icon);
     gbitmap_destroy(menu_window->pause_icon);
     free(menu_window);
-    menu_window = NULL;
     return;
   }
   // error handling

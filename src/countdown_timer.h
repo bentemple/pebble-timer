@@ -91,11 +91,12 @@ typedef struct CountdownTimer CountdownTimer;
  * creates a new CountdownTimer
  *
  *  duration: the length of the new timer in milliseconds
+ *  current_id_max: a pointer to the current max id
  *
  *  returns: a pointer to the new timer in memory
  */
 
-CountdownTimer *countdown_timer_create(int64_t duration);
+CountdownTimer *countdown_timer_create(int64_t duration, int32_t *current_id_max);
 
 
 
@@ -129,9 +130,10 @@ void countdown_timer_start(CountdownTimer *countdown_timer);
  * stops or pauses a CountdownTimer
  *
  *  countdown_timer: a pointer to the CountdownTimer being stopped
+ *  current_id_max: a pointer to the current max id
  */
 
-void countdown_timer_stop(CountdownTimer *countdown_timer);
+void countdown_timer_stop(CountdownTimer *countdown_timer, int32_t *current_id_max);
 
 
 
@@ -333,9 +335,10 @@ int64_t countdown_timer_get_current_time(CountdownTimer *countdown_timer);
  * creates a random ID for the CountdownTimer
  *
  *  countdown_timer: the CountdownTimer to give a random ID to
+ *  current_id_max: pointer to the current maximum increment of the id
  */
 
-void countdown_timer_rand_id(CountdownTimer *countdown_timer);
+void countdown_timer_rand_id(CountdownTimer *countdown_timer, int32_t *current_id_max);
 
 
 
