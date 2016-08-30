@@ -3,7 +3,7 @@
   "shortName": "Timer",
   "longName": "Timer",
   "companyName": "Pebble",
-  "versionLabel": "1.0",
+  "versionLabel": "1.1",
   "sdkVersion": "3",
   "targetPlatforms": ["aplite", "basalt"],
   "watchapp": {
@@ -16,6 +16,12 @@
   },
   "resources": {
     "media": [
+      {
+        "type": "png",
+        "name": "IMAGE_ICON",
+        "file": "images/image_system_icon.png",
+        "menuIcon": true
+      },
       {
         "type": "raw",
         "name": "ICON_ALARM_CLOCK",
@@ -143,12 +149,6 @@
         "name": "IMAGE_STAR",
         "file": "images/image_star.png",
         "targetPlatforms": ["aplite"]
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_ICON",
-        "file": "images/image_system_icon.png",
-        "menuIcon": true
       },
       {
         "type": "png",
