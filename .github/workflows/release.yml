@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/pebble-dev/rebble-tool:latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build
+        run: pebble build
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apt-get install -y gh
+          gh release create "${{ github.ref_name }}" build/pebble-timer.pbw --draft --title "${{ github.ref_name }}" --repo "${{ github.repository }}"
