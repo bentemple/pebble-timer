@@ -22,6 +22,7 @@
 #include <pebble.h>
 #include "menu_window.h"
 #include "countdown_timer.h"
+#include "app_settings.h"
 
 // Constants
 #ifdef PBL_ROUND
@@ -176,7 +177,7 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
     GFont font = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
     int32_t progress = TRIG_MAX_ANGLE * countdown_timer_get_current_time(countdown_timer) /
       countdown_timer_get_duration(countdown_timer);
-    if (progress >= TRIG_MAX_ANGLE) {
+    if (progress >= TRIG_MAX_ANGLE || g_low_power_active) {
       progress = 0;
     }
     GColor progress_bg_color = PBL_IF_COLOR_ELSE(GColorWhite, GColorLightGray);

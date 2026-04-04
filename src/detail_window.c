@@ -33,6 +33,7 @@
 #include <pebble.h>
 #include "detail_window.h"
 #include "countdown_timer.h"
+#include "app_settings.h"
 
 #define TEXT_LAYER_MAX_LARGE_CHARACTERS 5
 
@@ -80,6 +81,10 @@ struct DetailWindow {
  */
 
 static void layer_update_proc(Layer *layer, GContext *ctx) {
+  // skip progress animation in low power mode
+  if (g_low_power_active) {
+    return;
+  }
   // get DetailWindow pointer from layer data
   DetailWindow *detail_window = (*(DetailWindow**)layer_get_data(layer));
   int64_t current_time = countdown_timer_get_current_time(detail_window->countdown_timer);
@@ -393,14 +398,21 @@ void detail_window_refresh(DetailWindow *detail_window) {
   text_layer_set_text(detail_window->sub_text, detail_window->sub_buff);
   // count-up since first expiry
   int64_t ended_at = countdown_timer_get_ended_at(detail_window->countdown_timer);
-  if (ended_at != 0) {
+  if (g_app_settings.show_countup && ended_at != 0) {
     int64_t elapsed_ms = countdown_timer_get_epoch_ms() - ended_at;
-    char elapsed_buff[11];
-    countdown_timer_format_text(elapsed_ms, elapsed_buff, sizeof(elapsed_buff));
-    snprintf(detail_window->countup_buff, sizeof(detail_window->countup_buff),
-      "+%s", elapsed_buff);
-    text_layer_set_text(detail_window->countup_text, detail_window->countup_buff);
-    layer_set_hidden(text_layer_get_layer(detail_window->countup_text), false);
+    // hide count-up if expiry is enabled and elapsed time exceeds the threshold
+    bool expired = g_app_settings.countup_expiry_enabled &&
+                   elapsed_ms > (int64_t)g_app_settings.countup_expiry_hours * 3600000;
+    if (!expired) {
+      char elapsed_buff[11];
+      countdown_timer_format_text(elapsed_ms, elapsed_buff, sizeof(elapsed_buff));
+      snprintf(detail_window->countup_buff, sizeof(detail_window->countup_buff),
+        "+%s", elapsed_buff);
+      text_layer_set_text(detail_window->countup_text, detail_window->countup_buff);
+      layer_set_hidden(text_layer_get_layer(detail_window->countup_text), false);
+    } else {
+      layer_set_hidden(text_layer_get_layer(detail_window->countup_text), true);
+    }
   } else {
     layer_set_hidden(text_layer_get_layer(detail_window->countup_text), true);
   }

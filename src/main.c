@@ -16,6 +16,7 @@
 #include "setting_window.h"
 #include "popup_window.h"
 #include "phone.h"
+#include "app_settings.h"
 
 // constants
 #define COUNTDOWN_TIMER_PERSIST_KEY 72445846
@@ -76,7 +77,10 @@ static void app_timer_callback(void *data) {
 #ifdef PBL_PLATFORM_APLITE
     popup_window_set_image(s_popup_window, RESOURCE_ID_IMAGE_ALARM);
 #else
-    popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_ALARM_CLOCK, true);
+    // skip the animated PDC in low power mode (show no animation — just the title text)
+    if (!g_low_power_active) {
+      popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_ALARM_CLOCK, true);
+    }
 #endif
     popup_window_set_auto_close_duration(s_popup_window, 15000);
     popup_window_add_action_bar(s_popup_window);
@@ -292,20 +296,23 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
   detail_window_pop(s_detail_window, true);
 
   // show timer confirmation window (no countdown timer - just an animation)
-  popup_window_set_countdown_timer(s_popup_window, NULL);
-  popup_window_set_title(s_popup_window, "Timer Deleted");
-  popup_window_set_highlight_color(s_popup_window, PBL_IF_COLOR_ELSE(GColorPictonBlue, GColorWhite));
+  // skip in low power mode or when skip_delete_animation is enabled
+  if (!g_low_power_active && !g_app_settings.skip_delete_animation) {
+    popup_window_set_countdown_timer(s_popup_window, NULL);
+    popup_window_set_title(s_popup_window, "Timer Deleted");
+    popup_window_set_highlight_color(s_popup_window, PBL_IF_COLOR_ELSE(GColorPictonBlue, GColorWhite));
 #ifdef PBL_PLATFORM_APLITE
-  popup_window_set_image(s_popup_window, RESOURCE_ID_IMAGE_SHREADER);
-  popup_window_set_auto_close_duration(s_popup_window, 1000);
+    popup_window_set_image(s_popup_window, RESOURCE_ID_IMAGE_SHREADER);
+    popup_window_set_auto_close_duration(s_popup_window, 1000);
 #else
-  popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_DELETED, false);
-  int64_t pdc_duration = popup_window_get_pdc_duration(s_popup_window);
-  popup_window_set_auto_close_duration(s_popup_window, pdc_duration);
+    popup_window_set_pdc(s_popup_window, RESOURCE_ID_ICON_DELETED, false);
+    int64_t pdc_duration = popup_window_get_pdc_duration(s_popup_window);
+    popup_window_set_auto_close_duration(s_popup_window, pdc_duration);
 #endif
-  popup_window_remove_action_bar(s_popup_window);
-  popup_window_push(s_popup_window, true);
-  popup_window_refresh(s_popup_window);
+    popup_window_remove_action_bar(s_popup_window);
+    popup_window_push(s_popup_window, true);
+    popup_window_refresh(s_popup_window);
+  }
 
   // refresh immediately
   if (s_app_timer) {
@@ -373,6 +380,17 @@ static void menu_window_click_callback(uint8_t index, void *context) {
 
 
 
+/*
+ * Battery state callback for settings
+ * updates g_low_power_active whenever battery level changes
+ */
+
+static void prv_battery_state_handler(BatteryChargeState state) {
+  app_settings_apply_battery(state.charge_percent);
+}
+
+
+
 /*******************************************************************************
  * INITIALIZE AND DEINITIALIZE
  */
@@ -382,8 +400,16 @@ static void menu_window_click_callback(uint8_t index, void *context) {
  */
 
 static void initialize(void) {
+  // load app settings first so g_low_power_active and g_app_settings are ready
+  app_settings_load();
+
   // connect to phone
   phone_connect();
+  // register settings inbox handler (phone_connect only registers outbox callbacks)
+  app_message_register_inbox_received(app_settings_inbox_received);
+  // subscribe to battery updates to keep g_low_power_active current
+  battery_state_service_subscribe(prv_battery_state_handler);
+  app_settings_apply_battery(battery_state_service_peek().charge_percent);
   // load the CountdownTimer data
   if (persist_exists(COUNTDOWN_TIMER_PERSIST_KEY)) {
     countdown_timer_list_load(s_countdown_timers, &s_countdown_timers_count,
@@ -509,6 +535,8 @@ static void deinitialize(void) {
   }
   // disconnect from phone
   phone_disconnect();
+  // unsubscribe battery handler
+  battery_state_service_unsubscribe();
 
   // persist state
   persist_write_int(PERSIST_VERSION_KEY, PERSIST_VERSION);

@@ -45,6 +45,7 @@
 #include <pebble.h>
 #include "popup_window.h"
 #include "countdown_timer.h"
+#include "app_settings.h"
 
 /*******************************************************************************
  * CONSTANTS
@@ -509,16 +510,21 @@ void popup_window_refresh(PopupWindow *popup_window) {
   layer_mark_dirty(popup_window->layer);
 
   // update count-up display if the timer has an expiry time recorded
-  if (popup_window->countdown_timer != NULL && popup_window->window != NULL) {
+  if (g_app_settings.show_countup &&
+      popup_window->countdown_timer != NULL && popup_window->window != NULL) {
     int64_t ended_at = countdown_timer_get_ended_at(popup_window->countdown_timer);
     if (ended_at != 0) {
       int64_t elapsed_ms = countdown_timer_get_epoch_ms() - ended_at;
-      char elapsed_buff[11];
-      countdown_timer_format_text(elapsed_ms, elapsed_buff, sizeof(elapsed_buff));
-      snprintf(popup_window->countup_buff, sizeof(popup_window->countup_buff),
-        "+%s", elapsed_buff);
-      text_layer_set_text(popup_window->countup_text, popup_window->countup_buff);
-      layer_set_hidden(text_layer_get_layer(popup_window->countup_text), false);
+      bool expired = g_app_settings.countup_expiry_enabled &&
+                     elapsed_ms > (int64_t)g_app_settings.countup_expiry_hours * 3600000;
+      if (!expired) {
+        char elapsed_buff[11];
+        countdown_timer_format_text(elapsed_ms, elapsed_buff, sizeof(elapsed_buff));
+        snprintf(popup_window->countup_buff, sizeof(popup_window->countup_buff),
+          "+%s", elapsed_buff);
+        text_layer_set_text(popup_window->countup_text, popup_window->countup_buff);
+        layer_set_hidden(text_layer_get_layer(popup_window->countup_text), false);
+      }
     }
   }
 }
