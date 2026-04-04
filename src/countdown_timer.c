@@ -78,6 +78,8 @@ struct CountdownTimer {
   char        buff[16];     //< buffer for printing time string into
   bool        paused;       //< current state
   time_t      last_update;
+  int64_t     ended_at_ms;  //< epoch ms when timer first expired (0 if never / reset)
+  bool        snoozed;      //< true if timer has been snoozed after expiry
 } __attribute__((__packed__));
 
 
@@ -105,6 +107,7 @@ CountdownTimer *countdown_timer_create(int64_t duration, int32_t *current_id_max
     (*countdown_timer) = (CountdownTimer) {
       .duration_ms = duration,
       .paused = true,
+      .snoozed = false,
     };
     countdown_timer_rand_id(countdown_timer, current_id_max);
     return countdown_timer;
@@ -139,6 +142,10 @@ void countdown_timer_start(CountdownTimer *countdown_timer) {
     countdown_timer->start_ms += countdown_timer_get_epoch_ms();
     countdown_timer->paused = false;
     countdown_timer->last_update = time(NULL);
+    // Only reset state if not snoozed (fresh start)
+    if (!countdown_timer->snoozed) {
+      countdown_timer->ended_at_ms = 0;
+    }
   }
 }
 
@@ -200,6 +207,12 @@ CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
     // check if expired and not paused
     if (!timer_array[ii]->paused &&
         timer_array[ii]->start_ms + timer_array[ii]->duration_ms <= now) {
+      // record the first expiry time (snooze re-expiries don't overwrite it)
+      if (timer_array[ii]->ended_at_ms == 0) {
+        timer_array[ii]->ended_at_ms = now;
+      }
+      // Clear snoozed flag when timer expires (snooze is over)
+      timer_array[ii]->snoozed = false;
       timer_array[ii]->start_ms = 0;
       timer_array[ii]->paused = true;
       if (return_timer == NULL) {
@@ -516,4 +529,24 @@ char *countdown_timer_format_own_buff(CountdownTimer *countdown_timer) {
 
 time_t countdown_timer_get_last_update(CountdownTimer *countdown_timer) {
   return countdown_timer->last_update;
+}
+
+int64_t countdown_timer_get_ended_at(CountdownTimer *countdown_timer) {
+  return countdown_timer->ended_at_ms;
+}
+
+void countdown_timer_set_ended_at(CountdownTimer *countdown_timer, int64_t ended_at_ms) {
+  countdown_timer->ended_at_ms = ended_at_ms;
+  // Clear snoozed state when manually resetting ended_at (e.g., clearing countup)
+  if (ended_at_ms == 0) {
+    countdown_timer->snoozed = false;
+  }
+}
+
+bool countdown_timer_get_snoozed(CountdownTimer *countdown_timer) {
+  return countdown_timer->snoozed;
+}
+
+void countdown_timer_set_snoozed(CountdownTimer *countdown_timer, bool snoozed) {
+  countdown_timer->snoozed = snoozed;
 }

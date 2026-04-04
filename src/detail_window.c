@@ -33,6 +33,7 @@
 #include <pebble.h>
 #include "detail_window.h"
 #include "countdown_timer.h"
+#include "app_settings.h"
 
 #define TEXT_LAYER_MAX_LARGE_CHARACTERS 5
 
@@ -51,6 +52,7 @@ struct DetailWindow {
   Layer       *layer;     //< drawing layer
   TextLayer   *main_text; //< main, larger text
   TextLayer   *sub_text;  //< footer, small text
+  TextLayer   *countup_text; //< count-up since expiry, bottom-right corner
   ActionBarLayer *action; //< action bar
   GBitmap     *edit_icon, *play_icon, *pause_icon, *delete_icon;  //< icons
   GFont       large_font, medium_font, small_font; //< fonts
@@ -60,6 +62,7 @@ struct DetailWindow {
 
   char        main_buff[12];          //< text buffer for main_text
   char        sub_buff[12];           //< text buffer for sub_text
+  char        countup_buff[12];       //< text buffer for countup_text
 
   bool        animation_update_needed;    //< whether it needs to be refreshed
 
@@ -78,6 +81,10 @@ struct DetailWindow {
  */
 
 static void layer_update_proc(Layer *layer, GContext *ctx) {
+  // skip progress animation in low power mode
+  if (g_low_power_active) {
+    return;
+  }
   // get DetailWindow pointer from layer data
   DetailWindow *detail_window = (*(DetailWindow**)layer_get_data(layer));
   int64_t current_time = countdown_timer_get_current_time(detail_window->countdown_timer);
@@ -131,14 +138,32 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 
 /*
- * DOWN click handler callback
+ * DOWN short-click handler callback
  *
- * deletes the timer
+ * Deletes the timer
  */
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   DetailWindow *detail_window = (DetailWindow*)context;
-  return detail_window->callbacks.delete_timer(detail_window->countdown_timer, context);
+  detail_window->callbacks.delete_timer(detail_window->countdown_timer, context);
+}
+
+/*
+ * DOWN long-click handler callback
+ *
+ * Clears the countup timer if expired, otherwise deletes the timer
+ */
+
+static void down_long_click_handler(ClickRecognizerRef recognizer, void *context) {
+  DetailWindow *detail_window = (DetailWindow*)context;
+
+  // Clear countup if timer has expired
+  if (countdown_timer_get_ended_at(detail_window->countdown_timer) != 0) {
+    countdown_timer_set_ended_at(detail_window->countdown_timer, 0);
+    detail_window_refresh(detail_window);
+  } else {
+      detail_window->callbacks.delete_timer(detail_window->countdown_timer, context);
+  }
 }
 
 
@@ -154,6 +179,7 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
+  window_long_click_subscribe(BUTTON_ID_DOWN, 500, down_long_click_handler, NULL);
 }
 
 
@@ -226,6 +252,22 @@ static void prv_window_load(Window* window){
   text_layer_set_text(detail_window->sub_text, "00:00");
   text_layer_set_background_color(detail_window->sub_text, GColorClear);
   layer_add_child(root, text_layer_get_layer(detail_window->sub_text));
+  // count-up since expiry
+  // on round screens: row above sub_text, centered
+  // on rectangular screens: row above sub_text, left-aligned
+#ifdef PBL_ROUND
+  detail_window->countup_text = text_layer_create(
+    GRect(0, bounds.size.h-text_sizes[2]*2-17, bounds.size.w, text_sizes[2]));
+  text_layer_set_text_alignment(detail_window->countup_text, GTextAlignmentCenter);
+#else
+  detail_window->countup_text = text_layer_create(
+    GRect(10, bounds.size.h-text_sizes[2]*2-12, bounds.size.w - ACTION_BAR_WIDTH - 10, text_sizes[2]));
+  text_layer_set_text_alignment(detail_window->countup_text, GTextAlignmentLeft);
+#endif
+  text_layer_set_font(detail_window->countup_text, detail_window->small_font);
+  text_layer_set_background_color(detail_window->countup_text, GColorClear);
+  layer_set_hidden(text_layer_get_layer(detail_window->countup_text), true);
+  layer_add_child(root, text_layer_get_layer(detail_window->countup_text));
   // create action bar
   detail_window->action = action_bar_layer_create();
   action_bar_layer_add_to_window(detail_window->action, detail_window->window);
@@ -251,6 +293,7 @@ static void prv_window_unload(Window* window){
   DetailWindow *detail_window = window_get_user_data(window);
   status_bar_layer_destroy(detail_window->status);
   action_bar_layer_destroy(detail_window->action);
+  text_layer_destroy(detail_window->countup_text);
   text_layer_destroy(detail_window->sub_text);
   text_layer_destroy(detail_window->main_text);
   layer_destroy(detail_window->layer);
@@ -373,10 +416,43 @@ void detail_window_refresh(DetailWindow *detail_window) {
   } else {
     text_layer_set_font(detail_window->main_text, detail_window->large_font);
   }
-  // sub text
-  countdown_timer_format_text(countdown_timer_get_duration(detail_window->countdown_timer),
-    detail_window->sub_buff, sizeof(detail_window->sub_buff));
-  text_layer_set_text(detail_window->sub_text, detail_window->sub_buff);
+  // sub text: show duration normally, or count-up if timer expired and not snoozed
+  int64_t ended_at = countdown_timer_get_ended_at(detail_window->countdown_timer);
+  int64_t duration = countdown_timer_get_duration(detail_window->countdown_timer);
+  bool snoozed = countdown_timer_get_snoozed(detail_window->countdown_timer);
+
+  if (ended_at != 0 && !snoozed) {
+    // Timer has expired and is NOT snoozed - show count-up in sub_text position
+    int64_t elapsed_ms = countdown_timer_get_epoch_ms() - ended_at;
+    char elapsed_buff[11];
+    countdown_timer_format_text(elapsed_ms, elapsed_buff, sizeof(elapsed_buff));
+    snprintf(detail_window->sub_buff, sizeof(detail_window->sub_buff), "+%s", elapsed_buff);
+    text_layer_set_text(detail_window->sub_text, detail_window->sub_buff);
+  } else {
+    // Show normal duration
+    countdown_timer_format_text(duration, detail_window->sub_buff, sizeof(detail_window->sub_buff));
+    text_layer_set_text(detail_window->sub_text, detail_window->sub_buff);
+  }
+
+  // count-up text: only shown when timer is snoozed
+  if (g_app_settings.show_countup && snoozed) {
+    int64_t elapsed_ms = countdown_timer_get_epoch_ms() - ended_at;
+    // hide count-up if expiry is enabled and elapsed time exceeds the threshold
+    bool expired = g_app_settings.countup_expiry_enabled &&
+                   elapsed_ms > (int64_t)g_app_settings.countup_expiry_hours * 3600000;
+    if (!expired) {
+      char elapsed_buff[11];
+      countdown_timer_format_text(elapsed_ms, elapsed_buff, sizeof(elapsed_buff));
+      snprintf(detail_window->countup_buff, sizeof(detail_window->countup_buff),
+        "+%s", elapsed_buff);
+      text_layer_set_text(detail_window->countup_text, detail_window->countup_buff);
+      layer_set_hidden(text_layer_get_layer(detail_window->countup_text), false);
+    } else {
+      layer_set_hidden(text_layer_get_layer(detail_window->countup_text), true);
+    }
+  } else {
+    layer_set_hidden(text_layer_get_layer(detail_window->countup_text), true);
+  }
 }
 
 

@@ -1,8 +1,10 @@
 {
-  "version": "1.2.0",
-  "author": "Pebble",
+  "version": "1.3.0",
+  "author": "Pebble and Ben Temple",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "@rebble/clay": "^1.0.8"
+  },
   "keywords": [
     "pebble-app"
   ],
@@ -28,25 +30,25 @@
         },
         {
           "type": "font",
-          "characterRegex": "[0-9:]",
+          "characterRegex": "[0-9:+]",
           "name": "FONT_LECO_REGULAR_SUBSET_20",
           "file": "fonts/leco_regular_mod.otf"
         },
         {
           "type": "font",
-          "characterRegex": "[0-9:]",
+          "characterRegex": "[0-9:+]",
           "name": "FONT_LECO_REGULAR_SUBSET_26",
           "file": "fonts/leco_regular_mod.otf"
         },
         {
           "type": "font",
-          "characterRegex": "[0-9:]",
+          "characterRegex": "[0-9:+]",
           "name": "FONT_LECO_REGULAR_SUBSET_36",
           "file": "fonts/leco_regular_mod.otf"
         },
         {
           "type": "font",
-          "characterRegex": "[0-9:]",
+          "characterRegex": "[0-9:+]",
           "name": "FONT_LECO_REGULAR_SUBSET_48",
           "file": "fonts/leco_regular_mod.otf"
         },
@@ -94,13 +96,17 @@
           "type": "bitmap",
           "name": "IMAGE_ALARM",
           "file": "images/image_alarm.png",
-          "targetPlatforms": ["aplite"]
+          "targetPlatforms": [
+            "aplite"
+          ]
         },
         {
           "type": "bitmap",
           "name": "IMAGE_SHREADER",
           "file": "images/image_shreader.png",
-          "targetPlatforms": ["aplite"]
+          "targetPlatforms": [
+            "aplite"
+          ]
         }
       ]
     },
@@ -109,7 +115,13 @@
     "messageKeys": {
       "KEY_TOTAL_TIME": 15,
       "KEY_UNIQUEID": 10,
-      "KEY_DURATION": 5
+      "KEY_DURATION": 5,
+      "LowPowerEnabled": 20,
+      "LowPowerThreshold": 21,
+      "ShowCountup": 22,
+      "SkipDeleteAnimation": 23,
+      "CountupExpiryEnabled": 24,
+      "CountupExpiryHours": 25
     },
     "enableMultiJS": true,
     "displayName": "Timer",
@@ -126,7 +138,9 @@
       "emery",
       "gabbro"
     ],
-    "capabilities": []
+    "capabilities": [
+      "configurable"
+    ]
   },
   "name": "Timer"
 }

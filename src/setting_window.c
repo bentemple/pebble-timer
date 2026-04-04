@@ -248,10 +248,11 @@ static void prv_window_load(Window* window){
   setting_window->selection = selection_layer_create(GRect(8, cell_y_start, bounds.size.w-16, cell_height), num_cells);
   uint8_t cell_width = (screen_width - 16 - (num_cells - 1) * 4) / num_cells;
 #endif
+  uint8_t cell_padding = 4;
   for (int i = 0; i < num_cells; i++) {
     selection_layer_set_cell_width(setting_window->selection, i, cell_width);
   }
-  selection_layer_set_cell_padding(setting_window->selection, 4);
+  selection_layer_set_cell_padding(setting_window->selection, cell_padding);
   selection_layer_set_active_bg_color(setting_window->selection, setting_window->highlight_color);
   selection_layer_set_inactive_bg_color(setting_window->selection, GColorDarkGray);
   selection_layer_set_click_config_onto_window(

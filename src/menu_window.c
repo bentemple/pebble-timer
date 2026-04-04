@@ -22,6 +22,7 @@
 #include <pebble.h>
 #include "menu_window.h"
 #include "countdown_timer.h"
+#include "app_settings.h"
 
 // Constants
 #ifdef PBL_ROUND
@@ -34,8 +35,21 @@
 #define MENU_CELL_PROG_THICK 2
 #endif
 #define MENU_CELL_TEXT_Y_BUFF_RATIO 0.2
+
+// Adjust row heights for higher resolution screens
+#if defined(PBL_PLATFORM_EMERY)
+// Emery (200x228) - uniform shorter rows
+#define MENU_LAYER_DEFAULT_CELL_HEIGHT 48
+#define MENU_LAYER_SELECTED_CELL_HEIGHT 48
+#elif defined(PBL_PLATFORM_GABBRO)
+// Gabbro (260x260) - shorter rows
+#define MENU_LAYER_DEFAULT_CELL_HEIGHT 44
+#define MENU_LAYER_SELECTED_CELL_HEIGHT 55
+#else
+// Default for other platforms (basalt, chalk, aplite, diorite, flint)
 #define MENU_LAYER_DEFAULT_CELL_HEIGHT 52
 #define MENU_LAYER_SELECTED_CELL_HEIGHT 65
+#endif
 
 
 
@@ -177,7 +191,7 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
     GFont font = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
     int32_t progress = TRIG_MAX_ANGLE * countdown_timer_get_current_time(countdown_timer) /
       countdown_timer_get_duration(countdown_timer);
-    if (progress >= TRIG_MAX_ANGLE) {
+    if (progress >= TRIG_MAX_ANGLE || g_low_power_active) {
       progress = 0;
     }
     GColor progress_bg_color = PBL_IF_COLOR_ELSE(GColorWhite, GColorLightGray);
@@ -240,7 +254,7 @@ static MenuWindow *menu_window_init(MenuWindow *menu_window,
       .get_num_rows = menu_get_num_rows_callback,
       .draw_row = menu_draw_row_callback,
       .select_click = menu_select_callback,
-#ifdef PBL_ROUND
+#if defined(PBL_ROUND) || defined(PBL_PLATFORM_EMERY)
       .get_cell_height = menu_get_row_height_callback,
 #endif
     });
@@ -248,7 +262,8 @@ static MenuWindow *menu_window_init(MenuWindow *menu_window,
     layer_add_child(root, menu_layer_get_layer(menu_window->menu));
     // create text layer
 #ifdef PBL_ROUND
-    menu_window->text = text_layer_create(GRect(0, 129, bounds.size.w, 20));
+    // Position relative to screen height for round displays
+    menu_window->text = text_layer_create(GRect(0, bounds.size.h * 7 / 10, bounds.size.w, 20));
 #else
     menu_window->text = text_layer_create(GRect(0, 85, bounds.size.w, 20));
 #endif

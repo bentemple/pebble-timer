@@ -1,3 +1,8 @@
+// ********** Clay Settings ********** //
+var Clay = require('@rebble/clay');
+var clayConfig = require('./config');
+var clay = new Clay(clayConfig);
+
 // ********** Timeline ********** //
 // "Exersized" pin
 var timerPIN = {
