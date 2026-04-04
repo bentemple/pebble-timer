@@ -138,6 +138,7 @@ static void menu_cell_draw(GContext *ctx, const Layer *layer, char *title, GBitm
     }
 #endif
     graphics_draw_bitmap_in_rect(ctx, icon, img_bounds);
+    graphics_context_set_compositing_mode(ctx, GCompOpAssign);
   }
   if (progress) {
     // draw background

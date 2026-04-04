@@ -15,4 +15,15 @@ the timer can be played and paused as well as edited and deleted.
 
 If the app is closed out, it will automatically open and vibrate when a timer goes off. From this timer ended
 screen, the user can dismiss the timer or snooze the timer. The former will leave it as a paused timer in
-the menu window, and the latter will roll the timer back one minute. 
+the menu window, and the latter will roll the timer back one minute.
+
+## Changelog
+
+### v1.2.1
+- Added Gabbro platform support
+- Improved UI scaling and font sizing across all screen sizes (Emery, Gabbro)
+- Improved setting window UI scaling with dynamic layout calculations
+- Fixed menu icon rendering artifact (black block/triangle) on round displays
+- Cleaned play icon anti-aliasing for crisp rendering on all platforms
+
+Thanks to [Thomas Buchheit](https://github.com/thomas5014) for contributing Emery/Gabbro support and UI scaling improvements.

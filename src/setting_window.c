@@ -216,26 +216,40 @@ static void prv_window_load(Window* window){
   Layer *root = window_get_root_layer(setting_window->window);
   GRect bounds = layer_get_frame(root);
   // main text
-  setting_window->main_text = text_layer_create(GRect(0, 30, bounds.size.w, 40));
+  setting_window->main_text = text_layer_create(GRect(0, bounds.size.h/7, bounds.size.w, 40));
   text_layer_set_text(setting_window->main_text, "Set Timer");
+#if defined(PBL_PLATFORM_EMERY) || defined(PBL_PLATFORM_GABBRO)
+  text_layer_set_font(setting_window->main_text,
+    fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+#else
   text_layer_set_font(setting_window->main_text,
     fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+#endif
   text_layer_set_text_alignment(setting_window->main_text, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(setting_window->main_text));
   // sub text
-  setting_window->sub_text = text_layer_create(GRect(1, 125, bounds.size.w, 40));
+  setting_window->sub_text = text_layer_create(GRect(1, bounds.size.h-43*bounds.size.h/168, bounds.size.w, 40));
   text_layer_set_text_alignment(setting_window->sub_text, GTextAlignmentCenter);
+#if defined(PBL_PLATFORM_EMERY) || defined(PBL_PLATFORM_GABBRO)
+  text_layer_set_font(setting_window->sub_text, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
+#else
   text_layer_set_font(setting_window->sub_text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+#endif
   layer_add_child(root, text_layer_get_layer(setting_window->sub_text));
   // create selection layer
   uint8_t num_cells = 3; // hours, minutes, seconds
+  uint16_t screen_width = bounds.size.w;
+  uint16_t cell_height = (bounds.size.h + 4) / 5;
+  uint16_t cell_y_start = bounds.size.h/2 - cell_height/2;
 #ifdef PBL_ROUND
-  setting_window->selection = selection_layer_create(GRect(26, 75, bounds.size.w-52, 34), num_cells);
+  setting_window->selection = selection_layer_create(GRect(26, cell_y_start, bounds.size.w-52, cell_height), num_cells);
+  uint8_t cell_width = (screen_width - 52 - (num_cells - 1) * 4) / num_cells;
 #else
-  setting_window->selection = selection_layer_create(GRect(8, 75, bounds.size.w-16, 34), num_cells);
+  setting_window->selection = selection_layer_create(GRect(8, cell_y_start, bounds.size.w-16, cell_height), num_cells);
+  uint8_t cell_width = (screen_width - 16 - (num_cells - 1) * 4) / num_cells;
 #endif
   for (int i = 0; i < num_cells; i++) {
-    selection_layer_set_cell_width(setting_window->selection, i, 40);
+    selection_layer_set_cell_width(setting_window->selection, i, cell_width);
   }
   selection_layer_set_cell_padding(setting_window->selection, 4);
   selection_layer_set_active_bg_color(setting_window->selection, setting_window->highlight_color);

@@ -45,6 +45,12 @@
           "file": "fonts/leco_regular_mod.otf"
         },
         {
+          "type": "font",
+          "characterRegex": "[0-9:]",
+          "name": "FONT_LECO_REGULAR_SUBSET_48",
+          "file": "fonts/leco_regular_mod.otf"
+        },
+        {
           "type": "bitmap",
           "name": "IMAGE_DISMISS",
           "file": "images/action_bar_icon_dismiss.png"
@@ -105,7 +111,7 @@
       "KEY_UNIQUEID": 10,
       "KEY_DURATION": 5
     },
-    "enableMultiJS": false,
+    "enableMultiJS": true,
     "displayName": "Timer",
     "watchapp": {
       "onlyShownOnCommunication": false,
@@ -117,7 +123,8 @@
       "basalt",
       "chalk",
       "diorite",
-      "emery"
+      "emery",
+      "gabbro"
     ],
     "capabilities": []
   },

@@ -171,12 +171,23 @@ static void prv_window_load(Window* window){
   detail_window->play_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_PLAY);
   detail_window->pause_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_PAUSE);
   detail_window->delete_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_DELETE);
-  detail_window->large_font = fonts_load_custom_font(
-    resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_36));
-  detail_window->medium_font = fonts_load_custom_font(
-    resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_26));
-  detail_window->small_font = fonts_load_custom_font(
-    resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_20));
+  #if defined(PBL_PLATFORM_EMERY) || defined(PBL_PLATFORM_GABBRO)
+      detail_window->large_font = fonts_load_custom_font(
+          resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_48));
+      detail_window->medium_font = fonts_load_custom_font(
+          resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_36));
+      detail_window->small_font = fonts_load_custom_font(
+          resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_26));
+      uint8_t text_sizes[] = {52, 40, 30};
+ #else
+      detail_window->large_font = fonts_load_custom_font(
+          resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_36));
+      detail_window->medium_font = fonts_load_custom_font(
+          resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_26));
+      detail_window->small_font = fonts_load_custom_font(
+          resource_get_handle(RESOURCE_ID_FONT_LECO_REGULAR_SUBSET_20));
+      uint8_t text_sizes[] = {40, 30, 24};
+ #endif
   // get window parameters
   Layer *root = window_get_root_layer(detail_window->window);
   GRect bounds = layer_get_frame(root);
@@ -191,10 +202,10 @@ static void prv_window_load(Window* window){
   // create main text
 #ifdef PBL_ROUND
   detail_window->main_text = text_layer_create(
-    GRect(0, 65, bounds.size.w - ACTION_BAR_WIDTH, 36));
+    GRect(0, bounds.size.h/2-text_sizes[0]/2, bounds.size.w - ACTION_BAR_WIDTH, text_sizes[0]));
 #else
   detail_window->main_text = text_layer_create(
-    GRect(0, 20, bounds.size.w - ACTION_BAR_WIDTH, 36));
+    GRect(0, bounds.size.h*2 / 17, bounds.size.w - ACTION_BAR_WIDTH, text_sizes[0]));
 #endif
   text_layer_set_font(detail_window->main_text, detail_window->large_font);
   text_layer_set_text(detail_window->main_text, "00:00");
@@ -204,11 +215,11 @@ static void prv_window_load(Window* window){
   // create sub text
 #ifdef PBL_ROUND
   detail_window->sub_text = text_layer_create(
-    GRect(0, 145, bounds.size.w, 20));
+    GRect(0, bounds.size.h-text_sizes[2]-11, bounds.size.w, text_sizes[2]));
     text_layer_set_text_alignment(detail_window->sub_text, GTextAlignmentCenter);
 #else
   detail_window->sub_text = text_layer_create(
-    GRect(10, 138, bounds.size.w - ACTION_BAR_WIDTH, 20));
+    GRect(10, bounds.size.h-text_sizes[2]-6, bounds.size.w - ACTION_BAR_WIDTH, text_sizes[2]));
     text_layer_set_text_alignment(detail_window->sub_text, GTextAlignmentLeft);
 #endif
   text_layer_set_font(detail_window->sub_text, detail_window->small_font);
@@ -402,6 +413,7 @@ void detail_window_set_highlight_color(DetailWindow *detail_window, GColor color
  */
 
 bool detail_window_get_update_needed(DetailWindow *detail_window) {
+  if (detail_window->countdown_timer == NULL) return false;
   return detail_window->animation_update_needed ||
     !countdown_timer_get_paused(detail_window->countdown_timer);
 }
