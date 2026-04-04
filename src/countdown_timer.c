@@ -78,6 +78,7 @@ struct CountdownTimer {
   char        buff[16];     //< buffer for printing time string into
   bool        paused;       //< current state
   time_t      last_update;
+  int64_t     ended_at_ms;  //< epoch ms when timer first expired (0 if never / reset)
 } __attribute__((__packed__));
 
 
@@ -139,6 +140,7 @@ void countdown_timer_start(CountdownTimer *countdown_timer) {
     countdown_timer->start_ms += countdown_timer_get_epoch_ms();
     countdown_timer->paused = false;
     countdown_timer->last_update = time(NULL);
+    countdown_timer->ended_at_ms = 0;
   }
 }
 
@@ -200,6 +202,10 @@ CountdownTimer *countdown_timer_check_ended(CountdownTimer **timer_array,
     // check if expired and not paused
     if (!timer_array[ii]->paused &&
         timer_array[ii]->start_ms + timer_array[ii]->duration_ms <= now) {
+      // record the first expiry time (snooze re-expiries don't overwrite it)
+      if (timer_array[ii]->ended_at_ms == 0) {
+        timer_array[ii]->ended_at_ms = now;
+      }
       timer_array[ii]->start_ms = 0;
       timer_array[ii]->paused = true;
       if (return_timer == NULL) {
@@ -516,4 +522,12 @@ char *countdown_timer_format_own_buff(CountdownTimer *countdown_timer) {
 
 time_t countdown_timer_get_last_update(CountdownTimer *countdown_timer) {
   return countdown_timer->last_update;
+}
+
+int64_t countdown_timer_get_ended_at(CountdownTimer *countdown_timer) {
+  return countdown_timer->ended_at_ms;
+}
+
+void countdown_timer_set_ended_at(CountdownTimer *countdown_timer, int64_t ended_at_ms) {
+  countdown_timer->ended_at_ms = ended_at_ms;
 }

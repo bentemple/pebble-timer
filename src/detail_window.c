@@ -51,6 +51,7 @@ struct DetailWindow {
   Layer       *layer;     //< drawing layer
   TextLayer   *main_text; //< main, larger text
   TextLayer   *sub_text;  //< footer, small text
+  TextLayer   *countup_text; //< count-up since expiry, bottom-right corner
   ActionBarLayer *action; //< action bar
   GBitmap     *edit_icon, *play_icon, *pause_icon, *delete_icon;  //< icons
   GFont       large_font, medium_font, small_font; //< fonts
@@ -60,6 +61,7 @@ struct DetailWindow {
 
   char        main_buff[12];          //< text buffer for main_text
   char        sub_buff[12];           //< text buffer for sub_text
+  char        countup_buff[12];       //< text buffer for countup_text
 
   bool        animation_update_needed;    //< whether it needs to be refreshed
 
@@ -191,10 +193,10 @@ static void prv_window_load(Window* window){
   // create main text
 #ifdef PBL_ROUND
   detail_window->main_text = text_layer_create(
-    GRect(0, 65, bounds.size.w - ACTION_BAR_WIDTH, 36));
+    GRect(0, bounds.size.h * 2 / 5 - 18, bounds.size.w - ACTION_BAR_WIDTH, 36));
 #else
   detail_window->main_text = text_layer_create(
-    GRect(0, 20, bounds.size.w - ACTION_BAR_WIDTH, 36));
+    GRect(0, bounds.size.h / 6, bounds.size.w - ACTION_BAR_WIDTH, 36));
 #endif
   text_layer_set_font(detail_window->main_text, detail_window->large_font);
   text_layer_set_text(detail_window->main_text, "00:00");
@@ -204,17 +206,39 @@ static void prv_window_load(Window* window){
   // create sub text
 #ifdef PBL_ROUND
   detail_window->sub_text = text_layer_create(
-    GRect(0, 145, bounds.size.w, 20));
+    GRect(0, bounds.size.h * 4 / 5 - 10, bounds.size.w, 20));
     text_layer_set_text_alignment(detail_window->sub_text, GTextAlignmentCenter);
 #else
   detail_window->sub_text = text_layer_create(
-    GRect(10, 138, bounds.size.w - ACTION_BAR_WIDTH, 20));
+    GRect(10, bounds.size.h - 30, bounds.size.w - ACTION_BAR_WIDTH, 20));
     text_layer_set_text_alignment(detail_window->sub_text, GTextAlignmentLeft);
 #endif
   text_layer_set_font(detail_window->sub_text, detail_window->small_font);
   text_layer_set_text(detail_window->sub_text, "00:00");
   text_layer_set_background_color(detail_window->sub_text, GColorClear);
   layer_add_child(root, text_layer_get_layer(detail_window->sub_text));
+  // count-up since expiry
+  // on round and small screens: row above sub_text, centered/left
+  // on large screens (emery): same row as sub_text, right-aligned
+#ifdef PBL_ROUND
+  detail_window->countup_text = text_layer_create(
+    GRect(0, bounds.size.h * 4 / 5 - 32, bounds.size.w - 10, 20));
+  text_layer_set_text_alignment(detail_window->countup_text, GTextAlignmentCenter);
+#else
+  if (bounds.size.h < 200) {
+    detail_window->countup_text = text_layer_create(
+      GRect(10, bounds.size.h - 52, bounds.size.w - ACTION_BAR_WIDTH - 10, 20));
+    text_layer_set_text_alignment(detail_window->countup_text, GTextAlignmentLeft);
+  } else {
+    detail_window->countup_text = text_layer_create(
+      GRect(0, bounds.size.h - 30, bounds.size.w - ACTION_BAR_WIDTH - 10, 20));
+    text_layer_set_text_alignment(detail_window->countup_text, GTextAlignmentRight);
+  }
+#endif
+  text_layer_set_font(detail_window->countup_text, detail_window->small_font);
+  text_layer_set_background_color(detail_window->countup_text, GColorClear);
+  layer_set_hidden(text_layer_get_layer(detail_window->countup_text), true);
+  layer_add_child(root, text_layer_get_layer(detail_window->countup_text));
   // create action bar
   detail_window->action = action_bar_layer_create();
   action_bar_layer_add_to_window(detail_window->action, detail_window->window);
@@ -240,6 +264,7 @@ static void prv_window_unload(Window* window){
   DetailWindow *detail_window = window_get_user_data(window);
   status_bar_layer_destroy(detail_window->status);
   action_bar_layer_destroy(detail_window->action);
+  text_layer_destroy(detail_window->countup_text);
   text_layer_destroy(detail_window->sub_text);
   text_layer_destroy(detail_window->main_text);
   layer_destroy(detail_window->layer);
@@ -366,6 +391,19 @@ void detail_window_refresh(DetailWindow *detail_window) {
   countdown_timer_format_text(countdown_timer_get_duration(detail_window->countdown_timer),
     detail_window->sub_buff, sizeof(detail_window->sub_buff));
   text_layer_set_text(detail_window->sub_text, detail_window->sub_buff);
+  // count-up since first expiry
+  int64_t ended_at = countdown_timer_get_ended_at(detail_window->countdown_timer);
+  if (ended_at != 0) {
+    int64_t elapsed_ms = countdown_timer_get_epoch_ms() - ended_at;
+    char elapsed_buff[11];
+    countdown_timer_format_text(elapsed_ms, elapsed_buff, sizeof(elapsed_buff));
+    snprintf(detail_window->countup_buff, sizeof(detail_window->countup_buff),
+      "+%s", elapsed_buff);
+    text_layer_set_text(detail_window->countup_text, detail_window->countup_buff);
+    layer_set_hidden(text_layer_get_layer(detail_window->countup_text), false);
+  } else {
+    layer_set_hidden(text_layer_get_layer(detail_window->countup_text), true);
+  }
 }
 
 
@@ -402,6 +440,10 @@ void detail_window_set_highlight_color(DetailWindow *detail_window, GColor color
  */
 
 bool detail_window_get_update_needed(DetailWindow *detail_window) {
+  if (detail_window->countdown_timer != NULL &&
+      countdown_timer_get_ended_at(detail_window->countdown_timer) != 0) {
+    return true;
+  }
   return detail_window->animation_update_needed ||
     !countdown_timer_get_paused(detail_window->countdown_timer);
 }

@@ -216,28 +216,32 @@ static void prv_window_load(Window* window){
   Layer *root = window_get_root_layer(setting_window->window);
   GRect bounds = layer_get_frame(root);
   // main text
-  setting_window->main_text = text_layer_create(GRect(0, 30, bounds.size.w, 40));
+  int16_t main_text_y = bounds.size.h / 5;
+  setting_window->main_text = text_layer_create(GRect(0, main_text_y, bounds.size.w, 40));
   text_layer_set_text(setting_window->main_text, "Set Timer");
   text_layer_set_font(setting_window->main_text,
     fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   text_layer_set_text_alignment(setting_window->main_text, GTextAlignmentCenter);
   layer_add_child(root, text_layer_get_layer(setting_window->main_text));
   // sub text
-  setting_window->sub_text = text_layer_create(GRect(1, 125, bounds.size.w, 40));
+  int16_t sub_text_y = bounds.size.h - 43;
+  setting_window->sub_text = text_layer_create(GRect(1, sub_text_y, bounds.size.w, 40));
   text_layer_set_text_alignment(setting_window->sub_text, GTextAlignmentCenter);
   text_layer_set_font(setting_window->sub_text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   layer_add_child(root, text_layer_get_layer(setting_window->sub_text));
   // create selection layer
   uint8_t num_cells = 3; // hours, minutes, seconds
-#ifdef PBL_ROUND
-  setting_window->selection = selection_layer_create(GRect(26, 75, bounds.size.w-52, 34), num_cells);
-#else
-  setting_window->selection = selection_layer_create(GRect(8, 75, bounds.size.w-16, 34), num_cells);
-#endif
+  int16_t selection_y = (main_text_y + 40 + sub_text_y) / 2 - 17;
+  // Center the selection layer: 3 cells * 40px + 2 gaps * 4px = 128px total content width
+  int16_t cell_width = 40;
+  int16_t cell_padding = 4;
+  int16_t selection_w = num_cells * cell_width + (num_cells - 1) * cell_padding;
+  int16_t selection_x = (bounds.size.w - selection_w) / 2;
+  setting_window->selection = selection_layer_create(GRect(selection_x, selection_y, selection_w, 34), num_cells);
   for (int i = 0; i < num_cells; i++) {
-    selection_layer_set_cell_width(setting_window->selection, i, 40);
+    selection_layer_set_cell_width(setting_window->selection, i, cell_width);
   }
-  selection_layer_set_cell_padding(setting_window->selection, 4);
+  selection_layer_set_cell_padding(setting_window->selection, cell_padding);
   selection_layer_set_active_bg_color(setting_window->selection, setting_window->highlight_color);
   selection_layer_set_inactive_bg_color(setting_window->selection, GColorDarkGray);
   selection_layer_set_click_config_onto_window(

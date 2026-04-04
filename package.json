@@ -28,7 +28,7 @@
         },
         {
           "type": "font",
-          "characterRegex": "[0-9:]",
+          "characterRegex": "[0-9:+]",
           "name": "FONT_LECO_REGULAR_SUBSET_20",
           "file": "fonts/leco_regular_mod.otf"
         },

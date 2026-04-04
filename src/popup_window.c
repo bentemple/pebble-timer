@@ -71,6 +71,8 @@ struct PopupWindow {
   Window          *window;        //< main window
   Layer           *layer;         //< drawing layer for PDC or image
   TextLayer       *text;          //< displays title text
+  TextLayer       *countup_text;  //< displays count-up since expiry
+  char             countup_buff[12]; //< buffer for count-up string
   ActionBarLayer  *action;        //< optional action bar for dialogs
   PopupWindowCallbacks    callbacks;     //< callbacks for optional ActionBar
   GBitmap *snooze_icon,   *stop_icon;    //< icons for ActionBar
@@ -276,18 +278,28 @@ static void prv_window_load(Window* window){
   layer_set_clips(popup_window->layer, false);
   layer_set_update_proc(popup_window->layer, layer_update_proc);
   layer_add_child(root, popup_window->layer);
-  // text
-#ifndef PBL_PLATFORM_APLITE
-  const int text_layer_origin_y = 125;
-#else
-  const int text_layer_origin_y = 110;
-#endif
+  // text - position below the vertically-centered icon (icon is 80px tall, centered in screen)
+  const int text_layer_origin_y = bounds.size.h / 2 + 44;
   popup_window->text = text_layer_create(GRect(0, text_layer_origin_y, bounds.size.w, 36));
   text_layer_set_font(popup_window->text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   text_layer_set_text_alignment(popup_window->text, GTextAlignmentCenter);
   text_layer_set_background_color(popup_window->text, GColorClear);
   text_layer_set_text(popup_window->text, popup_window->title);
   layer_add_child(root, text_layer_get_layer(popup_window->text));
+  // count-up since expiry - bottom right corner, below the title
+#ifdef PBL_ROUND
+  int16_t horiz_off_cu = 0;
+#else
+  int16_t horiz_off_cu = (popup_window->action_visible) ? ACTION_BAR_WIDTH : 0;
+#endif
+  popup_window->countup_text = text_layer_create(
+    GRect(0, bounds.size.h - 24, bounds.size.w - horiz_off_cu - 10, 20));
+  text_layer_set_font(popup_window->countup_text,
+    fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_text_alignment(popup_window->countup_text, GTextAlignmentRight);
+  text_layer_set_background_color(popup_window->countup_text, GColorClear);
+  layer_set_hidden(text_layer_get_layer(popup_window->countup_text), true);
+  layer_add_child(root, text_layer_get_layer(popup_window->countup_text));
   // create action bar
   popup_window->action = action_bar_layer_create();
   action_bar_layer_set_context(popup_window->action, popup_window);
@@ -308,6 +320,7 @@ static void prv_window_load(Window* window){
 static void prv_window_unload(Window* window){
   PopupWindow *popup_window = window_get_user_data(window);
   action_bar_layer_destroy(popup_window->action);
+  text_layer_destroy(popup_window->countup_text);
   text_layer_destroy(popup_window->text);
   layer_destroy(popup_window->layer);
   window_destroy(popup_window->window);
@@ -494,6 +507,20 @@ void popup_window_refresh(PopupWindow *popup_window) {
 #endif
   // refresh
   layer_mark_dirty(popup_window->layer);
+
+  // update count-up display if the timer has an expiry time recorded
+  if (popup_window->countdown_timer != NULL && popup_window->window != NULL) {
+    int64_t ended_at = countdown_timer_get_ended_at(popup_window->countdown_timer);
+    if (ended_at != 0) {
+      int64_t elapsed_ms = countdown_timer_get_epoch_ms() - ended_at;
+      char elapsed_buff[11];
+      countdown_timer_format_text(elapsed_ms, elapsed_buff, sizeof(elapsed_buff));
+      snprintf(popup_window->countup_buff, sizeof(popup_window->countup_buff),
+        "+%s", elapsed_buff);
+      text_layer_set_text(popup_window->countup_text, popup_window->countup_buff);
+      layer_set_hidden(text_layer_get_layer(popup_window->countup_text), false);
+    }
+  }
 }
 
 #ifndef PBL_PLATFORM_APLITE

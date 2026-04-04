@@ -128,8 +128,12 @@ static void app_timer_callback(void *data) {
  */
 
 static void popup_window_snooze_timer_callback(CountdownTimer *countdown_timer, void *context) {
+  // preserve the original expiry time across snoozes
+  int64_t ended_at = countdown_timer_get_ended_at(countdown_timer);
   countdown_timer_update(countdown_timer, COUNTDOWN_TIMER_SNOOZE_DELAY, false);
   countdown_timer_start(countdown_timer);
+  // countdown_timer_start cleared ended_at_ms, restore it
+  countdown_timer_set_ended_at(countdown_timer, ended_at);
   popup_window_pop(s_popup_window, true);
   // show detail if not on top
   if (!detail_window_get_topmost_window(s_detail_window)) {
@@ -223,6 +227,7 @@ static void setting_window_complete_callback(int64_t duration, void *context) {
  */
 
 static void detail_window_edit_timer_callback(CountdownTimer *countdown_timer, void *context) {
+  countdown_timer_set_ended_at(countdown_timer, 0);
   setting_window_set_timer(s_setting_window, countdown_timer);
   setting_window_push(s_setting_window, true);
 
@@ -286,7 +291,8 @@ static void detail_window_delete_timer_callback(CountdownTimer *countdown_timer,
   // pop detail off stack
   detail_window_pop(s_detail_window, true);
 
-  // show timer confirmation window
+  // show timer confirmation window (no countdown timer - just an animation)
+  popup_window_set_countdown_timer(s_popup_window, NULL);
   popup_window_set_title(s_popup_window, "Timer Deleted");
   popup_window_set_highlight_color(s_popup_window, PBL_IF_COLOR_ELSE(GColorPictonBlue, GColorWhite));
 #ifdef PBL_PLATFORM_APLITE
@@ -507,6 +513,10 @@ static void deinitialize(void) {
   // persist state
   persist_write_int(PERSIST_VERSION_KEY, PERSIST_VERSION);
   persist_write_int(COUNTDOWN_TIMER_ID_PERSIST_KEY, s_countdown_timer_id_max);
+  // clear count-up state before saving - back button exit means user is done
+  for (uint8_t ii = 0; ii < s_countdown_timers_count; ii++) {
+    countdown_timer_set_ended_at(s_countdown_timers[ii], 0);
+  }
   countdown_timer_list_save(s_countdown_timers, s_countdown_timers_count,
     COUNTDOWN_TIMER_PERSIST_KEY);
   // schedule the wakeup
