@@ -401,3 +401,11 @@ CountdownTimer *countdown_timer_list_get_closest_timer_after(CountdownTimer **ti
                                                        CountdownTimer *after_countdown_timer);
 
 time_t countdown_timer_get_last_update(CountdownTimer *countdown_timer);
+
+int64_t countdown_timer_get_ended_at(CountdownTimer *countdown_timer);
+
+void countdown_timer_set_ended_at(CountdownTimer *countdown_timer, int64_t ended_at_ms);
+
+bool countdown_timer_get_snoozed(CountdownTimer *countdown_timer);
+
+void countdown_timer_set_snoozed(CountdownTimer *countdown_timer, bool snoozed);
