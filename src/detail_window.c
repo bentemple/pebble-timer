@@ -138,14 +138,32 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 
 /*
- * DOWN click handler callback
+ * DOWN short-click handler callback
  *
- * deletes the timer
+ * Deletes the timer
  */
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   DetailWindow *detail_window = (DetailWindow*)context;
-  return detail_window->callbacks.delete_timer(detail_window->countdown_timer, context);
+  detail_window->callbacks.delete_timer(detail_window->countdown_timer, context);
+}
+
+/*
+ * DOWN long-click handler callback
+ *
+ * Clears the countup timer if expired, otherwise deletes the timer
+ */
+
+static void down_long_click_handler(ClickRecognizerRef recognizer, void *context) {
+  DetailWindow *detail_window = (DetailWindow*)context;
+
+  // Clear countup if timer has expired
+  if (countdown_timer_get_ended_at(detail_window->countdown_timer) != 0) {
+    countdown_timer_set_ended_at(detail_window->countdown_timer, 0);
+    detail_window_refresh(detail_window);
+  } else {
+      detail_window->callbacks.delete_timer(detail_window->countdown_timer, context);
+  }
 }
 
 
@@ -161,6 +179,7 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
+  window_long_click_subscribe(BUTTON_ID_DOWN, 500, down_long_click_handler, NULL);
 }
 
 
