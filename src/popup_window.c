@@ -280,7 +280,8 @@ static void prv_window_load(Window* window){
   layer_set_update_proc(popup_window->layer, layer_update_proc);
   layer_add_child(root, popup_window->layer);
   // text - position below the vertically-centered icon (icon is 80px tall, centered in screen)
-  const int text_layer_origin_y = bounds.size.h / 2 + 44;
+  // Move up 4px for better positioning
+  const int text_layer_origin_y = bounds.size.h / 2 + 40;
   popup_window->text = text_layer_create(GRect(0, text_layer_origin_y, bounds.size.w, 36));
   text_layer_set_font(popup_window->text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   text_layer_set_text_alignment(popup_window->text, GTextAlignmentCenter);
@@ -290,14 +291,18 @@ static void prv_window_load(Window* window){
   // count-up since expiry - bottom right corner, below the title
 #ifdef PBL_ROUND
   int16_t horiz_off_cu = 0;
+  // On round displays, center the countup text instead of right-aligning
+  popup_window->countup_text = text_layer_create(
+    GRect(0, bounds.size.h - 30, bounds.size.w, 24));
+  text_layer_set_text_alignment(popup_window->countup_text, GTextAlignmentCenter);
 #else
   int16_t horiz_off_cu = (popup_window->action_visible) ? ACTION_BAR_WIDTH : 0;
-#endif
   popup_window->countup_text = text_layer_create(
     GRect(0, bounds.size.h - 24, bounds.size.w - horiz_off_cu - 10, 20));
+  text_layer_set_text_alignment(popup_window->countup_text, GTextAlignmentRight);
+#endif
   text_layer_set_font(popup_window->countup_text,
     fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-  text_layer_set_text_alignment(popup_window->countup_text, GTextAlignmentRight);
   text_layer_set_background_color(popup_window->countup_text, GColorClear);
   layer_set_hidden(text_layer_get_layer(popup_window->countup_text), true);
   layer_add_child(root, text_layer_get_layer(popup_window->countup_text));

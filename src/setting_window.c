@@ -231,7 +231,13 @@ static void prv_window_load(Window* window){
   layer_add_child(root, text_layer_get_layer(setting_window->sub_text));
   // create selection layer
   uint8_t num_cells = 3; // hours, minutes, seconds
+#ifdef PBL_ROUND
+  // On round displays, center vertically in the screen
+  int16_t selection_y = bounds.size.h / 2 - 17; // 34px height, so -17 centers it
+#else
+  // On rectangular displays, center between main text and sub text
   int16_t selection_y = (main_text_y + 40 + sub_text_y) / 2 - 17;
+#endif
   // Center the selection layer: 3 cells * 40px + 2 gaps * 4px = 128px total content width
   int16_t cell_width = 40;
   int16_t cell_padding = 4;
